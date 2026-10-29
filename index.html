@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Архив корпоративной жизни</title>
+<style>
+:root {
+  --paper: #fffdf8;
+  --ink: #39352f;
+  --muted: #79736a;
+  --pink: #f5dce0;
+  --green: #e0eadc;
+  --yellow: #f8edc7;
+  --blue: #dfe9f3;
+  --line: #e7dfd3;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 10% 5%, #f9e7e4 0, transparent 28rem),
+    radial-gradient(ellipse at 95% 35%, #e7eee1 0, transparent 26rem),
+    #f8f5ee;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  line-height: 1.55;
+}
+button { font: inherit; cursor: pointer; }
+.wrap { width: min(1120px, calc(100% - 32px)); margin: auto; }
+header { padding: 48px 0 26px; }
+.eyebrow {
+  color: #98756c;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+h1 {
+  max-width: 780px;
+  margin: 10px 0;
+  font-size: clamp(2.2rem, 7vw, 4.7rem);
+  line-height: 1.02;
+  letter-spacing: -.055em;
+}
+.intro { max-width: 680px; color: var(--muted); font-size: 1.08rem; }
+.note {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 13px;
+  border: 1px dashed #c9b8a6;
+  border-radius: 12px;
+  background: #fffaf0;
+  font-size: .88rem;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 36px;
+}
+nav a {
+  padding: 8px 12px;
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: .9rem;
+}
+nav a:hover { background: var(--yellow); }
+.pack {
+  margin: 0 0 42px;
+  padding: clamp(16px, 3vw, 28px);
+  background: rgba(255,253,248,.93);
+  border: 1px solid var(--line);
+  border-radius: 23px;
+  box-shadow: 0 7px 25px #54432b0a;
+  scroll-margin-top: 15px;
+}
+.pack-head {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.pack-tag {
+  display: inline-block;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 700;
+}
+.pink { background: var(--pink); }
+.green { background: var(--green); }
+.yellow { background: var(--yellow); }
+.blue { background: var(--blue); }
+h2 { margin: 5px 0; font-size: clamp(1.5rem, 4vw, 2.25rem); line-height: 1.15; }
+.pack-desc { max-width: 700px; margin: 0; color: var(--muted); }
+.caption-box {
+  padding: 14px 16px;
+  background: #f7f2e9;
+  border-radius: 14px;
+  border-left: 3px solid #d7b5a6;
+}
+.caption-label {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: .75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.caption-text { margin: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.btn {
+  border: 1px solid #d8cec0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: white;
+  color: var(--ink);
+  font-size: .88rem;
+}
+.btn:hover { background: var(--yellow); }
+.btn.primary { background: var(--ink); color: white; border-color: var(--ink); }
+.btn.primary:hover { background: #5c554b; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+.meme {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: white;
+}
+.meme img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+  background: #f4f0e8;
+  cursor: zoom-in;
+}
+.meme-body { padding: 12px; }
+.meme-number { color: #9b8174; font-size: .76rem; font-weight: 800; }
+.meme-title { margin: 3px 0 10px; font-size: .97rem; line-height: 1.35; }
+.meme .btn { width: 100%; }
+footer {
+  padding: 8px 0 48px;
+  color: var(--muted);
+  font-size: .88rem;
+}
+.toast {
+  position: fixed;
+  z-index: 10;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  color: white;
+  background: var(--ink);
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.toast.show { opacity: 1; }
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: 24px;
+  background: #211e1beF;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+.lightbox button {
+  position: absolute; top: 16px; right: 18px;
+  padding: 8px 13px; border: 0; border-radius: 9px;
+}
+@media (max-width: 760px) {
+  header { padding-top: 30px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .meme-body { padding: 9px; }
+  .meme-title { font-size: .88rem; }
+  .meme .btn { font-size: .8rem; padding: 8px 5px; }
+}
+@media (max-width: 420px) {
+  .grid { grid-template-columns: 1fr; }
+  .meme { display: grid; grid-template-columns: 43% 1fr; align-items: start; }
+  .meme img { height: 100%; max-height: 300px; object-fit: contain; }
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="eyebrow">Небольшой привет из прошлой работы</div>
+  <h1>Архив корпоративной жизни</h1>
+  <p class="intro">
+    29 мемов, пять тематических подборок и немного коллективной терапии.
+    Выбирай пачку, копируй подпись и отправляй бывшим коллегам.
+  </p>
+  <div class="note">📎 Все картинки берутся из твоей папки assets — повторно загружать их не нужно.</div>
+</header>
+
+<main class="wrap">
+  <nav aria-label="Подборки">
+    <a href="#work">Рабочие будни</a>
+    <a href="#urgent">Срочно, вчера</a>
+    <a href="#resources">Деньги и интеллект</a>
+    <a href="#animals">Животные</a>
+    <a href="#absurd">Что происходит</a>
+    <a href="#all">Все мемы по порядку</a>
+  </nav>
+
+  <section class="pack" id="work">
+    <div class="pack-head">
+      <span class="pack-tag pink">Пачка 01</span>
+      <h2>Рабочие будни и корпоративная жизнь</h2>
+      <p class="pack-desc">Новые задачи, удалёнка, вакансии, зарплаты и попытки понять, что вообще происходит на работе.</p>
+      <div class="caption-box">
+        <div class="caption-label">Общая подпись для чата</div>
+        <p class="caption-text" id="text-work">Собрала небольшую ретроспективу корпоративной жизни. Для тех, кто скучает по рабочим чатам, странным задачам и бесконечному поиску ответа на вопрос: а что мы вообще здесь делаем?</p>
+        <div class="actions"><button class="btn primary" onclick="copyText('text-work')">Копировать подпись</button></div>
+      </div>
+    </div>
+    <div class="grid" id="grid-work"></div>
+  </section>
+
+  <section class="pack" id="urgent">
+    <div class="pack-head">
+      <span class="pack-tag yellow">Пачка 02</span>
+      <h2>Срочно, вчера и желательно без лишних вопросов</h2>
+      <p class="pack-desc">Дедлайны, вайбкодинг и та самая инициатива, о которой потом рассказывают легенды.</p>
+      <div class="caption-box">
+        <div class="caption-label">Общая подпись для чата</div>
+        <p class="caption-text" id="text-urgent">Отдельная подборка для тех, кто хоть раз слышал «там на пять минут» и понимал, что ближайшие три часа его больше не существует.</p>
+        <div class="actions"><button class="btn primary" onclick="copyText('text-urgent')">Копировать подпись</button></div>
+      </div>
+    </div>
+    <div class="grid" id="grid-urgent"></div>
+  </section>
+
+  <section class="pack" id="resources">
+    <div class="pack-head">
+      <span class="pack-tag blue">Пачка 03</span>
+      <h2>Деньги, интеллект и другие недоступные ресурсы</h2>
+      <p class="pack-desc">Финансы, здравый смысл и задачи, в которых правильный ответ не всегда приносит облегчение.</p>
+      <div class="caption-box">
+        <div class="caption-label">Общая подпись для чата</div>
+        <p class="caption-text" id="text-resources">Немного про ресурсы, которыми мы вроде бы располагаем, но воспользоваться ими почему-то не получается. Особенно если речь одновременно про деньги, интеллект и здравый смысл.</p>
+        <div class="actions"><button class="btn primary" onclick="copyText('text-resources')">Копировать подпись</button></div>
+      </div>
+    </div>
+    <div class="grid" id="grid-resources"></div>
+  </section>
+
+  <section class="pack" id="animals">
+    <div class="pack-head">
+      <span class="pack-tag green">Пачка 04</span>
+      <h2>Психологическая поддержка от животных</h2>
+      <p class="pack-desc">Коты, собаки и другие существа, которым не нужны созвоны, чтобы выразить отношение к происходящему.</p>
+      <div class="caption-box">
+        <div class="caption-label">Общая подпись для чата</div>
+        <p class="caption-text" id="text-animals">Подборка от коллег, которые никогда не просили созвон, не ставили задачу на вчера и вообще лучше понимают человеческую жизнь, чем некоторые люди.</p>
+        <div class="actions"><button class="btn primary" onclick="copyText('text-animals')">Копировать подпись</button></div>
+      </div>
+    </div>
+    <div class="grid" id="grid-animals"></div>
+  </section>
+
+  <section class="pack" id="absurd">
+    <div class="pack-head">
+      <span class="pack-tag pink">Пачка 05</span>
+      <h2>Просто что-то происходит</h2>
+      <p class="pack-desc">Мемы, которым не нужно объяснение. Иногда объяснение только всё испортит.</p>
+      <div class="caption-box">
+        <div class="caption-label">Общая подпись для чата</div>
+        <p class="caption-text" id="text-absurd">И напоследок — подборка, которой не требуется объяснение. Иногда лучший способ осмыслить происходящее — посмотреть на него ещё раз и ничего не понять.</p>
+        <div class="actions"><button class="btn primary" onclick="copyText('text-absurd')">Копировать подпись</button></div>
+      </div>
+    </div>
+    <div class="grid" id="grid-absurd"></div>
+  </section>
+
+  <section class="pack" id="all">
+    <div class="pack-head">
+      <span class="pack-tag yellow">Контрольный список</span>
+      <h2>Все 29 мемов по порядку архива</h2>
+      <p class="pack-desc">Здесь картинки показаны в исходной последовательности — от первого файла до двадцать девятого.</p>
+    </div>
+    <div class="grid" id="grid-all"></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  Сделано для пересылки в чат, а не для серьёзного анализа корпоративной культуры.
+</footer>
+
+<div class="toast" id="toast">Скопировано!</div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button type="button" onclick="closeLightbox()">Закрыть ✕</button>
+  <img id="largeImage" src="" alt="Мем в увеличенном виде">
+</div>
+
+<script>
+const memes = [
+  {n:1, ext:"png", group:"work", title:"Доставка в офис и другие неконтролируемые процессы"},
+  {n:2, ext:"png", group:"absurd", title:"Когда мечты принимают неожиданный оборот"},
+  {n:3, ext:"png", group:"work", title:"Пришла новая задача от руководителя"},
+  {n:4, ext:"png", group:"resources", title:"Потратить деньги с умом — отдельный навык"},
+  {n:5, ext:"png", group:"resources", title:"Когда интеллект и деньги не подтверждены"},
+  {n:6, ext:"png", group:"work", title:"Удалёнка, офис и вопросы без очевидного ответа"},
+  {n:7, ext:"png", group:"work", title:"Условия работы: мелкий шрифт"},
+  {n:8, ext:"png", group:"work", title:"Вакансия мечты или начало новой истории"},
+  {n:9, ext:"png", group:"animals", title:"Доктор внимательно следит за рационом"},
+  {n:10, ext:"png", group:"absurd", title:"Мы в безопасности"},
+  {n:11, ext:"png", group:"work", title:"Ставка на искусственный интеллект"},
+  {n:12, ext:"png", group:"animals", title:"Кот и его режим существования"},
+  {n:13, ext:"png", group:"animals", title:"Всё будет хорошо. Но будет сложно"},
+  {n:14, ext:"png", group:"urgent", title:"Вайбкодинг и последствия"},
+  {n:15, ext:"png", group:"resources", title:"Движение денег: загадка века"},
+  {n:16, ext:"png", group:"animals", title:"Наконец-то время на любимое дело"},
+  {n:17, ext:"png", group:"resources", title:"Взгляд на себя со стороны"},
+  {n:18, ext:"png", group:"absurd", title:"Кем вы видите себя через пять лет?"},
+  {n:19, ext:"png", group:"animals", title:"Не ругайте ленивых"},
+  {n:20, ext:"png", group:"animals", title:"В гараже работают специалисты"},
+  {n:21, ext:"png", group:"animals", title:"Свиньи и корпоративная философия"},
+  {n:22, ext:"png", group:"work", title:"А за что, собственно, платят?"},
+  {n:23, ext:"png", group:"work", title:"Большая доступность и ценность сотрудника"},
+  {n:24, ext:"png", group:"work", title:"Как работать ради работы?"},
+  {n:25, ext:"png", group:"resources", title:"Математический квест"},
+  {n:26, ext:"png", group:"work", title:"Зарплата, удалёнка и жизненные планы"},
+  {n:27, ext:"jpg", group:"absurd", title:"Когда разговор снова свернул не туда"},
+  {n:28, ext:"jpg", group:"urgent", title:"Нужно как-то разогнаться до завтра"},
+  {n:29, ext:"jpg", group:"urgent", title:"Притча об инициативе и инициаторе"}
+];
+
+const groupNames = {
+  work: "Рабочие будни",
+  urgent: "Срочно, вчера",
+  resources: "Деньги и интеллект",
+  animals: "Животные",
+  absurd: "Просто что-то происходит"
+};
+
+function imagePath(m) {
+  return "assets/meme-" + String(m.n).padStart(2, "0") + "." + m.ext;
+}
+
+function makeCard(m) {
+  const card = document.createElement("article");
+  card.className = "meme";
+
+  const img = document.createElement("img");
+  img.src = imagePath(m);
+  img.alt = "Мем " + m.n + ": " + m.title;
+  img.loading = "lazy";
+  img.onerror = () => {
+    img.alt = "Не удалось загрузить " + imagePath(m);
+    img.style.minHeight = "100px";
+  };
+  img.addEventListener("click", () => openLightbox(img.src));
+
+  const body = document.createElement("div");
+  body.className = "meme-body";
+
+  const num = document.createElement("div");
+  num.className = "meme-number";
+  num.textContent = "МЕМ №" + String(m.n).padStart(2, "0");
+
+  const title = document.createElement("div");
+  title.className = "meme-title";
+  title.textContent = m.title;
+
+  const button = document.createElement("button");
+  button.className = "btn";
+  button.textContent = "Открыть крупнее";
+  button.addEventListener("click", () => openLightbox(img.src));
+
+  body.append(num, title, button);
+  card.append(img, body);
+  return card;
+}
+
+memes.forEach(m => {
+  document.getElementById("grid-" + m.group).appendChild(makeCard(m));
+  document.getElementById("grid-all").appendChild(makeCard(m));
+});
+
+async function copyText(id) {
+  const text = document.getElementById(id).innerText.trim();
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("Подпись скопирована!");
+  } catch (e) {
+    const field = document.createElement("textarea");
+    field.value = text;
+    field.style.position = "fixed";
+    field.style.opacity = "0";
+    document.body.appendChild(field);
+    field.select();
+    const ok = document.execCommand("copy");
+    field.remove();
+    showToast(ok ? "Подпись скопирована!" : "Не получилось скопировать — выдели текст вручную.");
+  }
+}
+
+let toastTimer;
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+function openLightbox(src) {
+  document.getElementById("largeImage").src = src;
+  document.getElementById("lightbox").classList.add("open");
+}
+function closeLightbox() {
+  document.getElementById("lightbox").classList.remove("open");
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeLightbox();
+});
+</script>
+</body>
+</html>
