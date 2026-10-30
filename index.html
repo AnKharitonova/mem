@@ -478,6 +478,28 @@ body {
 }
 
 @media (max-width: 600px) {
+  /* На телефонах используем лёгкое перелистывание без тяжёлого 3D */
+  .book-area { perspective: none; }
+  .book {
+    transform-style: flat;
+    filter: none;
+    will-change: auto;
+    contain: layout paint;
+  }
+  .sheet {
+    transform-style: flat;
+    transform-origin: center center;
+    transition: opacity .18s ease, transform .22s ease;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    will-change: transform, opacity;
+  }
+  .sheet.flipped {
+    transform: translate3d(-10px, 0, 0);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .page.back { display: none; }
   .topbar { padding: 13px 15px; font-size: 9px; }
   .topbar strong { font-size: 14px; }
   .book-area { padding: 5px 10px 15px; }
@@ -499,6 +521,8 @@ body {
   .reaction { padding: 3px 6px; min-height: 26px; gap: 3px; }
   .reaction .emoji { font-size: 14px; }
   .reaction .count { font-size: 9px; }
+  .reaction:hover { transform: none; }
+  .nav-button:hover:not(:disabled) { background: rgba(248,243,232,.85); color: var(--ink); }
 }
 </style>
 </head>
