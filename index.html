@@ -523,7 +523,7 @@ body {
   <button class="nav-button" id="next">Далее →</button>
 </div>
 
-<div class="hint">Листай кнопками, стрелками клавиатуры или свайпом</div>
+<div class="hint">Листай по одной странице: кнопками, стрелками клавиатуры или свайпом</div>
 
 <div class="zoom" id="zoom">
   <img src="" alt="Увеличенное изображение" id="zoomImage">
@@ -739,7 +739,9 @@ const nextButton = document.getElementById('next');
 
 const sheets = [];
 
-for (let i = 0; i < pages.length; i += 2) {
+// Каждый материал — отдельный лист. Так перелистывание проходит
+// последовательно по всем страницам, включая чётные.
+for (let i = 0; i < pages.length; i++) {
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
 
@@ -749,10 +751,7 @@ for (let i = 0; i < pages.length; i += 2) {
 
   const back = document.createElement('div');
   back.className = 'page back';
-
-  if (pages[i + 1]) {
-    back.innerHTML = makePage(pages[i + 1], i + 2);
-  }
+  back.innerHTML = '<div class="page-inner"></div>';
 
   sheet.append(front, back);
   book.appendChild(sheet);
@@ -774,9 +773,9 @@ function updateBook() {
       : sheets.length - index;
   });
 
-  const currentPage = Math.min(currentSheet * 2 + 1, pages.length);
+  const currentPage = Math.min(currentSheet + 1, pages.length);
   counter.textContent = currentSheet === 0
-    ? 'Обложка'
+    ? 'Обложка · 1 / ' + pages.length
     : `${currentPage} / ${pages.length}`;
 
   prevButton.disabled = currentSheet === 0;
