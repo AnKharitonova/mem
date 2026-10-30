@@ -1,475 +1,836 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f8f5ef">
-  <title>Небольшой мемный архив</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#e8e0d1">
+<title>Внеплановый выпуск</title>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
 
-    :root {
-      --paper: #faf8f2;
-      --ink: #393a35;
-      --muted: #85847c;
-      --orange: #d98762;
-      --green: #879b83;
-      --pink: #e8c8c1;
-      --line: #e8e2d7;
-      --card: #fffefa;
-    }
+:root {
+  --paper: #f8f3e8;
+  --ink: #302e29;
+  --muted: #81796c;
+  --accent: #b65e42;
+  --line: #d9d0c0;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+* { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 10%, #f7f0e4, transparent 65%),
+    #d9d0c1;
+  color: var(--ink);
+  font-family: 'Manrope', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
 
-    body {
-      margin: 0;
-      background:
-        radial-gradient(circle at 10% 10%, rgba(232, 200, 193, .18), transparent 24rem),
-        radial-gradient(circle at 90% 35%, rgba(135, 155, 131, .12), transparent 28rem),
-        var(--paper);
-      color: var(--ink);
-      font-family: 'Manrope', sans-serif;
-      line-height: 1.6;
-    }
+.topbar {
+  width: 100%;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #655d51;
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
 
-    button {
-      font: inherit;
-    }
+.topbar strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  letter-spacing: .03em;
+  text-transform: none;
+  color: var(--ink);
+}
 
-    .page {
-      width: min(1100px, calc(100% - 36px));
-      margin: 0 auto;
-    }
+.book-area {
+  width: 100%;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 20px 20px;
+  perspective: 2200px;
+}
 
-    header {
-      padding: 76px 0 48px;
-      text-align: center;
-      position: relative;
-    }
+.book {
+  position: relative;
+  width: min(850px, 92vw);
+  height: min(680px, 76vh);
+  min-height: 470px;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 20px 25px rgba(48, 39, 27, .18));
+}
 
-    .eyebrow {
-      display: inline-block;
-      color: var(--green);
-      font-family: 'Comfortaa', sans-serif;
-      font-size: 12px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
+.sheet {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transition: transform .85s cubic-bezier(.2,.65,.25,1);
+}
 
-    h1 {
-      font-family: 'Comfortaa', sans-serif;
-      font-size: clamp(30px, 6vw, 54px);
-      line-height: 1.2;
-      font-weight: 700;
-      margin: 0 auto 18px;
-      max-width: 760px;
-    }
+.sheet.flipped {
+  transform: rotateY(-180deg);
+}
 
-    .intro {
-      color: var(--muted);
-      max-width: 570px;
-      margin: 0 auto;
-      font-size: 15px;
-    }
+.page {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background:
+    linear-gradient(90deg, rgba(80,60,30,.035), transparent 7%, transparent 94%, rgba(80,60,30,.025)),
+    var(--paper);
+  border: 1px solid #e2d9c9;
+  overflow: hidden;
+  padding: 34px 42px;
+}
 
-    .doodle {
-      position: absolute;
-      font-size: 30px;
-      opacity: .72;
-      transform: rotate(-12deg);
-      user-select: none;
-    }
+.page.back {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(270deg, rgba(80,60,30,.035), transparent 7%, transparent 94%, rgba(80,60,30,.025)),
+    #f5efe3;
+}
 
-    .doodle.one {
-      left: 8%;
-      top: 72px;
-    }
+.page-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
 
-    .doodle.two {
-      right: 9%;
-      top: 112px;
-      transform: rotate(13deg);
-    }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
 
-    .doodle.three {
-      right: 17%;
-      bottom: 12px;
-      font-size: 23px;
-      transform: rotate(-8deg);
-    }
+.page-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .08em;
+}
 
-    .batch {
-      padding: 38px 0 48px;
-      border-top: 1px dashed var(--line);
-    }
+.cover {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  background:
+    radial-gradient(ellipse at center, rgba(182,94,66,.08), transparent 55%),
+    var(--paper);
+}
 
-    .batch-heading {
-      display: flex;
-      align-items: flex-start;
-      gap: 15px;
-      margin-bottom: 10px;
-    }
+.cover .masthead {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(43px, 8vw, 76px);
+  line-height: .98;
+  font-weight: 800;
+  letter-spacing: -.045em;
+  max-width: 650px;
+}
 
-    .batch-number {
-      flex: 0 0 34px;
-      width: 34px;
-      height: 34px;
-      border: 1px solid #d8c8b8;
-      color: #a87961;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-family: 'Comfortaa', sans-serif;
-      font-size: 13px;
-      margin-top: 2px;
-    }
+.cover .subtitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-style: italic;
+  color: var(--accent);
+  margin-top: 25px;
+}
 
-    h2 {
-      font-family: 'Comfortaa', sans-serif;
-      font-size: clamp(21px, 3.5vw, 27px);
-      line-height: 1.35;
-      margin: 0;
-      font-weight: 700;
-    }
+.cover .cover-line {
+  width: 70px;
+  height: 2px;
+  background: var(--accent);
+  margin: 27px auto;
+}
 
-    .batch-caption {
-      color: #77766e;
-      margin: 0 0 24px 49px;
-      max-width: 760px;
-      font-size: 14px;
-    }
+.cover .cover-note {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
 
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 17px;
-      margin-left: 49px;
-    }
+.cover .cover-decoration {
+  font-size: 42px;
+  margin-top: 40px;
+  opacity: .8;
+}
 
-    .meme {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      padding: 10px;
-      box-shadow: 0 4px 14px rgba(70, 59, 44, .035);
-      min-width: 0;
-      transition: transform .2s ease, box-shadow .2s ease;
-      cursor: zoom-in;
-    }
+.cover .issue {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .12em;
+}
 
-    .meme:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 9px 22px rgba(70, 59, 44, .08);
-    }
+.editorial {
+  justify-content: center;
+  text-align: center;
+  padding: 20px 7%;
+}
 
-    .meme img {
-      display: block;
-      width: 100%;
-      height: 245px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: #f5f1e9;
-    }
+.editorial .small-title {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  font-size: 10px;
+  margin-bottom: 24px;
+}
 
-    .meme-index {
-      display: block;
-      padding: 8px 3px 1px;
-      color: #aaa397;
-      font-size: 10px;
-      letter-spacing: .08em;
-    }
+.editorial h2 {
+  font: 700 clamp(28px, 4vw, 43px)/1.15 'Playfair Display', serif;
+  margin: 0 0 25px;
+}
 
-    footer {
-      text-align: center;
-      padding: 38px 0 58px;
-      color: var(--muted);
-      font-size: 13px;
-      border-top: 1px dashed var(--line);
-    }
+.editorial p {
+  max-width: 460px;
+  margin: 0 auto 14px;
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #5c554b;
+}
 
-    .footer-doodle {
-      font-size: 27px;
-      display: block;
-      margin-bottom: 9px;
-    }
+.editorial .ornament {
+  font-size: 30px;
+  margin-top: 22px;
+  color: var(--accent);
+}
 
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      background: rgba(35, 34, 31, .88);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      cursor: zoom-out;
-    }
+.article-page {
+  gap: 14px;
+}
 
-    .lightbox.open {
-      display: flex;
-    }
+.article-title {
+  font: 700 clamp(22px, 3.3vw, 32px)/1.2 'Playfair Display', serif;
+  margin: 18px 0 0;
+}
 
-    .lightbox img {
-      max-width: min(100%, 1050px);
-      max-height: 90vh;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 15px 60px rgba(0, 0, 0, .25);
-    }
+.article-subtitle {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
 
-    .close {
-      position: absolute;
-      top: 18px;
-      right: 22px;
-      border: 0;
-      background: transparent;
-      color: white;
-      font-size: 34px;
-      cursor: pointer;
-      line-height: 1;
-    }
+.meme-frame {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: rgba(255,255,255,.45);
+  border: 1px solid #e7dfd1;
+  position: relative;
+}
 
-    @media (max-width: 760px) {
-      header {
-        padding: 60px 0 38px;
-      }
+.meme-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  cursor: zoom-in;
+}
 
-      .doodle.one {
-        left: 2%;
-        top: 25px;
-      }
+.meme-caption {
+  text-align: center;
+  font: italic 13px 'Playfair Display', serif;
+  color: #82796c;
+  margin: 0;
+}
 
-      .doodle.two {
-        right: 2%;
-        top: 45px;
-      }
+.two-memes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
 
-      .doodle.three {
-        display: none;
-      }
+.two-memes .meme-frame {
+  min-width: 0;
+}
 
-      .gallery {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 11px;
-        margin-left: 0;
-      }
+.two-memes img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
 
-      .meme {
-        padding: 7px;
-        border-radius: 12px;
-      }
+.back-cover {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at center, rgba(182,94,66,.08), transparent 60%),
+    var(--paper);
+}
 
-      .meme img {
-        height: 190px;
-      }
+.back-cover h2 {
+  font: 700 38px 'Playfair Display', serif;
+}
 
-      .batch-caption {
-        margin-left: 0;
-      }
+.back-cover p {
+  max-width: 390px;
+  color: var(--muted);
+  font: italic 17px/1.7 'Playfair Display', serif;
+}
 
-      .batch {
-        padding: 30px 0 36px;
-      }
-    }
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 16px 22px;
+}
 
-    @media (max-width: 420px) {
-      .page {
-        width: min(100% - 24px, 1100px);
-      }
+.nav-button {
+  border: 1px solid #bfb5a5;
+  background: rgba(248,243,232,.85);
+  color: var(--ink);
+  padding: 11px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: .2s;
+}
 
-      .gallery {
-        gap: 8px;
-      }
+.nav-button:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+}
 
-      .meme img {
-        height: 160px;
-      }
+.nav-button:disabled {
+  opacity: .35;
+  cursor: default;
+}
 
-      .meme-index {
-        font-size: 9px;
-      }
+.page-counter {
+  min-width: 95px;
+  text-align: center;
+  color: #71695e;
+  font-size: 11px;
+  letter-spacing: .1em;
+}
 
-      .batch-heading {
-        gap: 10px;
-      }
+.progress {
+  width: min(240px, 50vw);
+  height: 2px;
+  background: #cfc5b5;
+  margin: 0 auto 22px;
+  overflow: hidden;
+}
 
-      .batch-number {
-        flex-basis: 29px;
-        width: 29px;
-        height: 29px;
-      }
-    }
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width .4s;
+}
 
-    @media (prefers-reduced-motion: reduce) {
-      html {
-        scroll-behavior: auto;
-      }
+.zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(28,26,23,.93);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+  cursor: zoom-out;
+}
 
-      .meme {
-        transition: none;
-      }
-    }
-  </style>
+.zoom.open { display: flex; }
+
+.zoom img {
+  max-width: 95vw;
+  max-height: 92vh;
+  object-fit: contain;
+}
+
+.hint {
+  color: #807769;
+  font-size: 10px;
+  text-align: center;
+  padding-bottom: 14px;
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 13px 15px;
+    font-size: 9px;
+  }
+
+  .topbar strong { font-size: 14px; }
+
+  .book-area { padding: 5px 10px 15px; }
+
+  .book {
+    width: 94vw;
+    height: min(680px, 72vh);
+    min-height: 430px;
+  }
+
+  .page { padding: 22px 19px; }
+
+  .cover .masthead { font-size: clamp(39px, 11vw, 62px); }
+
+  .cover .subtitle { font-size: 16px; }
+
+  .article-title { font-size: 23px; }
+
+  .article-subtitle { font-size: 10px; }
+
+  .meme-caption { font-size: 11px; }
+
+  .two-memes { gap: 6px; }
+
+  .controls { gap: 10px; }
+
+  .nav-button {
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+
+  .page-counter {
+    min-width: 65px;
+    font-size: 10px;
+  }
+}
+</style>
 </head>
 
 <body>
-  <div class="page">
-    <header>
-      <span class="doodle one">✿</span>
-      <span class="doodle two">☁</span>
-      <span class="doodle three">✧</span>
 
-      <div class="eyebrow">маленький архив большого рабочего опыта</div>
-      <h1>Мемы, которые многое объясняют</h1>
-      <p class="intro">
-        Собрала небольшую коллекцию рабочих наблюдений,
-        жизненных ситуаций и других важных документов эпохи.
-      </p>
-    </header>
+<div class="topbar">
+  <strong>Внеплановый выпуск</strong>
+  <span>Специальное издание · № 01</span>
+</div>
 
-    <main id="content"></main>
+<div class="book-area">
+  <div class="book" id="book"></div>
+</div>
 
-    <footer>
-      <span class="footer-doodle">☘</span>
-      Пусть дальше будет больше хорошего и меньше срочного.
-    </footer>
-  </div>
+<div class="progress">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
 
-  <div class="lightbox" id="lightbox" aria-label="Просмотр изображения">
-    <button class="close" id="closeLightbox" aria-label="Закрыть">×</button>
-    <img src="" alt="Увеличенное изображение" id="lightboxImage">
-  </div>
+<div class="controls">
+  <button class="nav-button" id="prev">← Назад</button>
+  <div class="page-counter" id="counter">Обложка</div>
+  <button class="nav-button" id="next">Далее →</button>
+</div>
 
-  <script>
-    const digests = [
-      {
-        title: "Работа мечты и прочие условия",
-        caption: "Пчёлы в офисе, удалёнка в шаговой доступности, вакансии мечты и условия, которые мы заслужили. Где-то между всем этим — обычный рабочий день.",
-        memes: [1, 6, 7, 8, 23]
-      },
-      {
-        title: "Постановка задач: попробуй выполни",
-        caption: "Когда задача звучит просто, критерии успеха туманны, а результат почему-то должен быть прекрасным. Отдельная благодарность за инициативу и умение разгоняться до завтра.",
-        memes: [3, 25, 28, 29, 14]
-      },
-      {
-        title: "Деньги, зарплата и другие ресурсы",
-        caption: "Финансовая грамотность, налоги, зарплата и попытки разумно распорядиться тем, что осталось. Экономика — наука тонкая.",
-        memes: [4, 15, 22, 26, 5]
-      },
-      {
-        title: "Будущее уже наступило. Кажется",
-        caption: "Искусственный интеллект, востребованные навыки, планы на пять лет и прочие вопросы, на которые пока нет единого ответа.",
-        memes: [10, 11, 18, 27, 2]
-      },
-      {
-        title: "Отдел психологической поддержки",
-        caption: "Коты, свиньи и другие специалисты по восстановлению душевного равновесия. Работают без записи и не назначают совещаний.",
-        memes: [9, 12, 16, 19, 20]
-      },
-      {
-        title: "Когда слов уже недостаточно",
-        caption: "Немного жизненной философии, немного абсурда и несколько изображений, которым не нужны дополнительные комментарии.",
-        memes: [13, 17, 21, 24]
-      }
-    ];
+<div class="hint">Листай кнопками, стрелками клавиатуры или свайпом</div>
 
-    const content = document.getElementById('content');
+<div class="zoom" id="zoom">
+  <img src="" alt="Увеличенное изображение" id="zoomImage">
+</div>
 
-    function imagePath(number) {
-      const index = String(number).padStart(2, '0');
-      const extension = number >= 27 ? 'jpg' : 'png';
-      return `assets/meme-${index}.${extension}`;
-    }
+<script>
+const pages = [
+  {
+    type: 'cover'
+  },
+  {
+    type: 'editorial',
+    title: 'В этом выпуске',
+    text: 'Немного рабочих хроник, карьерных перспектив, финансовых открытий и наблюдений за окружающей действительностью.',
+    second: 'Всё, что хотелось сказать, но иногда проще показать картинкой.',
+    ornament: '✳'
+  },
 
-    digests.forEach((digest, index) => {
-      const section = document.createElement('section');
-      section.className = 'batch';
+  {
+    title: 'Рабочие будни',
+    subtitle: 'Когда обычный день снова оказался не таким уж обычным',
+    memes: [1]
+  },
+  {
+    title: 'Новые вводные',
+    subtitle: 'Постановка задач и тонкости рабочего процесса',
+    memes: [3]
+  },
+  {
+    title: 'Удалёнка с нюансами',
+    subtitle: 'Офис, дом и всё, что между ними',
+    memes: [6]
+  },
+  {
+    title: 'Рабочая атмосфера',
+    subtitle: 'Условия, ожидания и комментарии из жизни',
+    memes: [7]
+  },
+  {
+    title: 'Вакансия мечты',
+    subtitle: 'Карьерные перспективы бывают неожиданными',
+    memes: [8]
+  },
 
-      const heading = document.createElement('div');
-      heading.className = 'batch-heading';
+  {
+    title: 'Вопросы трудоустройства',
+    subtitle: 'Ожидания и реальность',
+    memes: [22]
+  },
+  {
+    title: 'Ценность специалиста',
+    subtitle: 'Иногда лучше просто взять паузу',
+    memes: [23]
+  },
+  {
+    title: 'Планы на рост',
+    subtitle: 'Когда цели компании звучат особенно амбициозно',
+    memes: [25]
+  },
+  {
+    title: 'Мотивация',
+    subtitle: 'Работа, зарплата и замкнутые круги',
+    memes: [26]
+  },
+  {
+    title: 'Срочность',
+    subtitle: 'Вчера было бы идеально',
+    memes: [28]
+  },
 
-      const number = document.createElement('div');
-      number.className = 'batch-number';
-      number.textContent = String(index + 1).padStart(2, '0');
+  {
+    title: 'Финансовые вопросы',
+    subtitle: 'Попытки обращаться с деньгами разумно',
+    memes: [4]
+  },
+  {
+    title: 'Интеллектуальный капитал',
+    subtitle: 'Когда ресурсов не хватает ни с одной стороны',
+    memes: [5]
+  },
+  {
+    title: 'Налог на продуктивность',
+    subtitle: 'Экономические открытия',
+    memes: [15]
+  },
 
-      const title = document.createElement('h2');
-      title.textContent = digest.title;
+  {
+    title: 'Технологическое будущее',
+    subtitle: 'Мы в безопасности. Наверное.',
+    memes: [10]
+  },
+  {
+    title: 'Искусственный интеллект',
+    subtitle: 'Новые технологии и старые вопросы',
+    memes: [11]
+  },
+  {
+    title: 'Токены и аппетиты',
+    subtitle: 'Когда технологии дорожают',
+    memes: [14]
+  },
+  {
+    title: 'Пятилетний план',
+    subtitle: 'Кем мы видим себя в будущем?',
+    memes: [18]
+  },
+  {
+    title: 'Новые горизонты',
+    subtitle: 'Будущее обещает быть интересным',
+    memes: [27]
+  },
 
-      heading.append(number, title);
+  {
+    title: 'Особая рубрика: коты',
+    subtitle: 'У них тоже есть профессиональное мнение',
+    memes: [9]
+  },
+  {
+    title: 'Наблюдения из жизни',
+    subtitle: 'Иногда достаточно просто посмотреть',
+    memes: [12]
+  },
+  {
+    title: 'Всё будет хорошо',
+    subtitle: 'Но, возможно, не совсем просто',
+    memes: [13]
+  },
+  {
+    title: 'Любимое занятие',
+    subtitle: 'Выходные — время важных дел',
+    memes: [16]
+  },
+  {
+    title: 'Философия безделья',
+    subtitle: 'Некоторые достижения не нуждаются в отчёте',
+    memes: [19]
+  },
+  {
+    title: 'Специалисты на месте',
+    subtitle: 'Всё под контролем. Почти.',
+    memes: [20]
+  },
+  {
+    title: 'Жизнь в деталях',
+    subtitle: 'У каждого свои обстоятельства',
+    memes: [21]
+  },
 
-      const caption = document.createElement('p');
-      caption.className = 'batch-caption';
-      caption.textContent = digest.caption;
+  {
+    title: 'Взгляд со стороны',
+    subtitle: 'Когда пытаешься осмыслить происходящее',
+    memes: [17]
+  },
+  {
+    title: 'Важный вопрос',
+    subtitle: 'О работе, смысле и прекрасном',
+    memes: [24]
+  },
 
-      const gallery = document.createElement('div');
-      gallery.className = 'gallery';
+  {
+    type: 'two',
+    title: 'Тигриная мудрость',
+    subtitle: 'Две важные публикации о жизни и инициативе',
+    memes: [2, 29]
+  },
+  {
+    type: 'back'
+  }
+];
 
-      digest.memes.forEach(memeNumber => {
-        const card = document.createElement('div');
-        card.className = 'meme';
-        card.setAttribute('role', 'button');
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('aria-label', `Открыть изображение ${memeNumber}`);
+const book = document.getElementById('book');
+const counter = document.getElementById('counter');
+const progressBar = document.getElementById('progressBar');
+const prevButton = document.getElementById('prev');
+const nextButton = document.getElementById('next');
 
-        const img = document.createElement('img');
-        img.src = imagePath(memeNumber);
-        img.alt = `Мем ${memeNumber}`;
-        img.loading = 'lazy';
+function assetPath(number) {
+  const name = String(number).padStart(2, '0');
+  const extension = number >= 27 ? 'jpg' : 'png';
+  return `assets/meme-${name}.${extension}`;
+}
 
-        const label = document.createElement('span');
-        label.className = 'meme-index';
-        label.textContent = `№ ${String(memeNumber).padStart(2, '0')}`;
+function makeHeader(pageNumber) {
+  return `
+    <div class="page-header">
+      <span>Внеплановый выпуск</span>
+      <span>Специальное издание</span>
+    </div>
+  `;
+}
 
-        card.append(img, label);
-        gallery.appendChild(card);
+function makeFooter(pageNumber) {
+  return `
+    <div class="page-footer">
+      <span>Хроники одной рабочей эпохи</span>
+      <span>${pageNumber}</span>
+    </div>
+  `;
+}
 
-        const openImage = () => showLightbox(img.src);
-        card.addEventListener('click', openImage);
-        card.addEventListener('keydown', event => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            openImage();
-          }
-        });
-      });
+function makeMeme(number) {
+  return `<img src="${assetPath(number)}" alt="Мем ${number}" loading="lazy" data-zoom>`;
+}
 
-      section.append(heading, caption, gallery);
-      content.appendChild(section);
-    });
+function makePage(data, pageNumber) {
+  if (data.type === 'cover') {
+    return `
+      <div class="page-inner cover">
+        <div class="cover-note">Специальное издание</div>
+        <div class="masthead">ВНЕПЛАНОВЫЙ<br>ВЫПУСК</div>
+        <div class="cover-line"></div>
+        <div class="subtitle">Хроники, наблюдения и другие важные события</div>
+        <div class="cover-decoration">✳</div>
+        <div class="issue">29 ИЛЛЮСТРАЦИЙ · ОДНА НЕПРОСТАЯ ЭПОХА</div>
+      </div>
+    `;
+  }
 
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImage = document.getElementById('lightboxImage');
+  if (data.type === 'editorial') {
+    return `
+      <div class="page-inner editorial">
+        ${makeHeader(pageNumber)}
+        <div class="small-title">От редакции</div>
+        <h2>${data.title}</h2>
+        <p>${data.text}</p>
+        <p>${data.second}</p>
+        <div class="ornament">${data.ornament}</div>
+        ${makeFooter(pageNumber)}
+      </div>
+    `;
+  }
 
-    function showLightbox(src) {
-      lightboxImage.src = src;
-      lightbox.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
+  if (data.type === 'back') {
+    return `
+      <div class="page-inner back-cover">
+        <div class="cover-note">Конец выпуска</div>
+        <h2>До новых встреч!</h2>
+        <p>Пусть впереди будет много интересных историй, хороших людей и поводов для улыбки.</p>
+        <div class="cover-decoration">✳</div>
+      </div>
+    `;
+  }
 
-    function closeLightbox() {
-      lightbox.classList.remove('open');
-      lightboxImage.src = '';
-      document.body.style.overflow = '';
-    }
+  if (data.type === 'two') {
+    return `
+      <div class="page-inner article-page">
+        ${makeHeader(pageNumber)}
+        <div>
+          <h2 class="article-title">${data.title}</h2>
+          <div class="article-subtitle">${data.subtitle}</div>
+        </div>
+        <div class="two-memes">
+          ${data.memes.map(number => `
+            <div class="meme-frame">${makeMeme(number)}</div>
+          `).join('')}
+        </div>
+        ${makeFooter(pageNumber)}
+      </div>
+    `;
+  }
 
-    lightbox.addEventListener('click', event => {
-      if (event.target === lightbox) closeLightbox();
-    });
+  return `
+    <div class="page-inner article-page">
+      ${makeHeader(pageNumber)}
+      <div>
+        <h2 class="article-title">${data.title}</h2>
+        <div class="article-subtitle">${data.subtitle}</div>
+      </div>
+      <div class="meme-frame">${makeMeme(data.memes[0])}</div>
+      ${makeFooter(pageNumber)}
+    </div>
+  `;
+}
 
-    document.getElementById('closeLightbox').addEventListener('click', closeLightbox);
+// Каждая физическая страница имеет лицевую и оборотную сторону.
+const sheets = [];
 
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeLightbox();
-    });
-  </script>
+for (let i = 0; i < pages.length; i += 2) {
+  const sheet = document.createElement('div');
+  sheet.className = 'sheet';
+
+  const front = document.createElement('div');
+  front.className = 'page front';
+  front.innerHTML = makePage(pages[i], i + 1);
+
+  const back = document.createElement('div');
+  back.className = 'page back';
+
+  if (pages[i + 1]) {
+    back.innerHTML = makePage(pages[i + 1], i + 2);
+  }
+
+  sheet.append(front, back);
+  book.appendChild(sheet);
+  sheets.push(sheet);
+}
+
+let currentSheet = 0;
+let isAnimating = false;
+
+sheets.forEach((sheet, index) => {
+  sheet.style.zIndex = sheets.length - index;
+});
+
+function updateBook() {
+  sheets.forEach((sheet, index) => {
+    sheet.classList.toggle('flipped', index < currentSheet);
+    sheet.style.zIndex = index < currentSheet
+      ? index + 1
+      : sheets.length - index;
+  });
+
+  const currentPage = Math.min(currentSheet * 2 + 1, pages.length);
+  counter.textContent = currentSheet === 0
+    ? 'Обложка'
+    : `${currentPage} / ${pages.length}`;
+
+  prevButton.disabled = currentSheet === 0;
+  nextButton.disabled = currentSheet >= sheets.length;
+
+  progressBar.style.width =
+    `${(currentSheet / sheets.length) * 100}%`;
+}
+
+function nextPage() {
+  if (currentSheet >= sheets.length || isAnimating) return;
+  currentSheet++;
+  updateBook();
+  isAnimating = true;
+  setTimeout(() => isAnimating = false, 850);
+}
+
+function prevPage() {
+  if (currentSheet <= 0 || isAnimating) return;
+  currentSheet--;
+  updateBook();
+  isAnimating = true;
+  setTimeout(() => isAnimating = false, 850);
+}
+
+nextButton.addEventListener('click', nextPage);
+prevButton.addEventListener('click', prevPage);
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'ArrowRight') nextPage();
+  if (event.key === 'ArrowLeft') prevPage();
+});
+
+let touchStartX = 0;
+
+book.addEventListener('touchstart', event => {
+  touchStartX = event.changedTouches[0].screenX;
+}, { passive: true });
+
+book.addEventListener('touchend', event => {
+  const delta = event.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(delta) < 45) return;
+  if (delta < 0) nextPage();
+  else prevPage();
+}, { passive: true });
+
+// Увеличение изображений.
+const zoom = document.getElementById('zoom');
+const zoomImage = document.getElementById('zoomImage');
+
+book.addEventListener('click', event => {
+  const img = event.target.closest('[data-zoom]');
+  if (!img) return;
+
+  zoomImage.src = img.src;
+  zoom.classList.add('open');
+});
+
+zoom.addEventListener('click', () => {
+  zoom.classList.remove('open');
+  zoomImage.src = '';
+});
+
+updateBook();
+</script>
+
 </body>
 </html>
