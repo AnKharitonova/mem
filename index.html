@@ -809,14 +809,21 @@ document.addEventListener('keydown', event => {
 });
 
 let touchStartX = 0;
+let touchStartedOnControl = false;
 
 book.addEventListener('touchstart', event => {
+  touchStartedOnControl = Boolean(event.target.closest('button, a, .reactions, [data-zoom]'));
   touchStartX = event.changedTouches[0].screenX;
 }, { passive: true });
 
 book.addEventListener('touchend', event => {
+  // Taps and horizontal gestures on reaction buttons or images must never turn a page.
+  if (touchStartedOnControl || event.target.closest('button, a, .reactions, [data-zoom]')) {
+    touchStartedOnControl = false;
+    return;
+  }
   const delta = event.changedTouches[0].screenX - touchStartX;
-  if (Math.abs(delta) < 45) return;
+  if (Math.abs(delta) < 55) return;
   if (delta < 0) nextPage();
   else prevPage();
 }, { passive: true });
@@ -917,31 +924,48 @@ async function refreshReactionData() {
   await Promise.all([loadAllReactionCounts(), loadMyReactions()]);
 }
 
+const reactionRequests = new Set();
+
 async function chooseReaction(memeId, emoji) {
   if (!authReady) return;
 
   const id = String(memeId);
+  const requestKey = `${id}:${emoji}`;
+  if (reactionRequests.has(requestKey)) return;
+  reactionRequests.add(requestKey);
+
   const selected = myReactions.get(id) || new Set();
-  const isSelected = selected.has(emoji);
+  const wasSelected = selected.has(emoji);
+  const nextSelected = new Set(selected);
+  if (wasSelected) nextSelected.delete(emoji);
+  else nextSelected.add(emoji);
+
+  // Update this meme immediately; do not reload every reaction on every click.
+  myReactions.set(id, nextSelected);
+  const counts = { ...(reactionCounts.get(id) || {}) };
+  counts[emoji] = Math.max(0, (Number(counts[emoji]) || 0) + (wasSelected ? -1 : 1));
+  reactionCounts.set(id, counts);
+  renderReactionGroup(id);
   setStatus(id, 'Сохраняю…');
 
-  const { error } = await supabaseClient.rpc(
-    isSelected ? 'remove_meme_reaction' : 'set_meme_reaction',
-    { p_meme_id: id, p_emoji: emoji }
-  );
-
-  if (error) {
+  try {
+    const { error } = await supabaseClient.rpc(
+      wasSelected ? 'remove_meme_reaction' : 'set_meme_reaction',
+      { p_meme_id: id, p_emoji: emoji }
+    );
+    if (error) throw error;
+    setStatus(id, '');
+  } catch (error) {
+    // Roll back the optimistic update if the server rejected the change.
+    myReactions.set(id, selected);
+    const rollbackCounts = { ...(reactionCounts.get(id) || {}) };
+    rollbackCounts[emoji] = Math.max(0, (Number(rollbackCounts[emoji]) || 0) + (wasSelected ? 1 : -1));
+    reactionCounts.set(id, rollbackCounts);
+    renderReactionGroup(id);
     setStatus(id, 'Не удалось сохранить реакцию');
     console.error('Supabase reaction RPC error:', error);
-    return;
-  }
-
-  try {
-    await refreshReactionData();
-    setStatus(id, '');
-  } catch (refreshError) {
-    console.error('Supabase reaction refresh error:', refreshError);
-    setStatus(id, 'Реакция сохранена, но счётчики пока не обновились');
+  } finally {
+    reactionRequests.delete(requestKey);
   }
 }
 
