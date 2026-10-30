@@ -1,457 +1,475 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Пятничный дайджест</title>
-<style>
-:root {
-  --paper: #fffdf8;
-  --ink: #39352f;
-  --muted: #79736a;
-  --pink: #f5dce0;
-  --green: #e0eadc;
-  --yellow: #f8edc7;
-  --blue: #dfe9f3;
-  --line: #e7dfd3;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0;
-  color: var(--ink);
-  background:
-    radial-gradient(ellipse at 10% 5%, #f9e7e4 0, transparent 28rem),
-    radial-gradient(ellipse at 95% 35%, #e7eee1 0, transparent 26rem),
-    #f8f5ee;
-  font-family: "Trebuchet MS", Arial, sans-serif;
-  line-height: 1.55;
-}
-button { font: inherit; cursor: pointer; }
-.wrap { width: min(1120px, calc(100% - 32px)); margin: auto; }
-header { padding: 42px 0 24px; }
-.eyebrow {
-  color: #98756c;
-  font-size: .78rem;
-  font-weight: 800;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-h1 {
-  max-width: 800px;
-  margin: 10px 0;
-  font-size: clamp(2.2rem, 7vw, 4.6rem);
-  line-height: 1.02;
-  letter-spacing: -.055em;
-}
-.intro { max-width: 700px; color: var(--muted); font-size: 1.08rem; }
-.notice {
-  display: inline-block;
-  padding: 8px 13px;
-  border: 1px dashed #c9b8a6;
-  border-radius: 12px;
-  background: #fffaf0;
-  font-size: .88rem;
-}
-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 30px; }
-nav a {
-  padding: 8px 12px;
-  color: var(--ink);
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  text-decoration: none;
-  font-size: .9rem;
-}
-nav a:hover { background: var(--yellow); }
-.pack {
-  margin: 0 0 32px;
-  padding: clamp(15px, 3vw, 26px);
-  background: rgba(255,253,248,.94);
-  border: 1px solid var(--line);
-  border-radius: 23px;
-  box-shadow: 0 7px 25px #54432b0a;
-  scroll-margin-top: 12px;
-}
-.pack-head { display: grid; gap: 10px; margin-bottom: 16px; }
-.tag {
-  display: inline-block;
-  width: fit-content;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: .78rem;
-  font-weight: 700;
-}
-.pink { background: var(--pink); }
-.green { background: var(--green); }
-.yellow { background: var(--yellow); }
-.blue { background: var(--blue); }
-h2 { margin: 5px 0; font-size: clamp(1.45rem, 4vw, 2.1rem); line-height: 1.15; }
-.desc { max-width: 720px; margin: 0; color: var(--muted); }
-.caption {
-  padding: 14px 16px;
-  background: #f7f2e9;
-  border-radius: 14px;
-  border-left: 3px solid #d7b5a6;
-}
-.label {
-  margin-bottom: 4px;
-  color: var(--muted);
-  font-size: .75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.caption p { margin: 0; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.btn {
-  border: 1px solid #d8cec0;
-  border-radius: 10px;
-  padding: 9px 12px;
-  background: white;
-  color: var(--ink);
-  font-size: .88rem;
-}
-.btn:hover { background: var(--yellow); }
-.btn.primary { background: var(--ink); color: white; border-color: var(--ink); }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-.meme {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: white;
-}
-.meme img {
-  display: block;
-  width: 100%;
-  height: 190px;
-  object-fit: contain;
-  background: #f4f0e8;
-  cursor: zoom-in;
-}
-.meme-body { padding: 10px; }
-.num { color: #9b8174; font-size: .75rem; font-weight: 800; }
-.meme-title { margin: 3px 0 10px; font-size: .88rem; line-height: 1.35; }
-.meme .btn { width: 100%; font-size: .8rem; padding: 8px 5px; }
-footer { padding: 8px 0 44px; color: var(--muted); font-size: .88rem; }
-.toast {
-  position: fixed;
-  z-index: 10;
-  left: 50%;
-  bottom: 20px;
-  transform: translateX(-50%);
-  padding: 10px 16px;
-  color: white;
-  background: var(--ink);
-  border-radius: 999px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s;
-}
-.toast.show { opacity: 1; }
-.lightbox {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  padding: 24px;
-  background: #211e1bef;
-  align-items: center;
-  justify-content: center;
-}
-.lightbox.open { display: flex; }
-.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
-.lightbox button {
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  padding: 8px 13px;
-  border: 0;
-  border-radius: 9px;
-}
-@media (max-width: 950px) {
-  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .meme img { height: 210px; }
-}
-@media (max-width: 600px) {
-  header { padding-top: 28px; }
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .meme img { height: 190px; }
-  .meme-body { padding: 8px; }
-  .meme-title { font-size: .83rem; }
-  .pack { border-radius: 17px; }
-}
-@media (max-width: 360px) {
-  .grid { grid-template-columns: 1fr; }
-  .meme { display: grid; grid-template-columns: 42% 1fr; align-items: start; }
-  .meme img { height: 100%; min-height: 150px; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8f5ef">
+  <title>Небольшой мемный архив</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --paper: #faf8f2;
+      --ink: #393a35;
+      --muted: #85847c;
+      --orange: #d98762;
+      --green: #879b83;
+      --pink: #e8c8c1;
+      --line: #e8e2d7;
+      --card: #fffefa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(232, 200, 193, .18), transparent 24rem),
+        radial-gradient(circle at 90% 35%, rgba(135, 155, 131, .12), transparent 28rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: 'Manrope', sans-serif;
+      line-height: 1.6;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1100px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 76px 0 48px;
+      text-align: center;
+      position: relative;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      color: var(--green);
+      font-family: 'Comfortaa', sans-serif;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Comfortaa', sans-serif;
+      font-size: clamp(30px, 6vw, 54px);
+      line-height: 1.2;
+      font-weight: 700;
+      margin: 0 auto 18px;
+      max-width: 760px;
+    }
+
+    .intro {
+      color: var(--muted);
+      max-width: 570px;
+      margin: 0 auto;
+      font-size: 15px;
+    }
+
+    .doodle {
+      position: absolute;
+      font-size: 30px;
+      opacity: .72;
+      transform: rotate(-12deg);
+      user-select: none;
+    }
+
+    .doodle.one {
+      left: 8%;
+      top: 72px;
+    }
+
+    .doodle.two {
+      right: 9%;
+      top: 112px;
+      transform: rotate(13deg);
+    }
+
+    .doodle.three {
+      right: 17%;
+      bottom: 12px;
+      font-size: 23px;
+      transform: rotate(-8deg);
+    }
+
+    .batch {
+      padding: 38px 0 48px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .batch-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .batch-number {
+      flex: 0 0 34px;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #d8c8b8;
+      color: #a87961;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-family: 'Comfortaa', sans-serif;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    h2 {
+      font-family: 'Comfortaa', sans-serif;
+      font-size: clamp(21px, 3.5vw, 27px);
+      line-height: 1.35;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .batch-caption {
+      color: #77766e;
+      margin: 0 0 24px 49px;
+      max-width: 760px;
+      font-size: 14px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 17px;
+      margin-left: 49px;
+    }
+
+    .meme {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0 4px 14px rgba(70, 59, 44, .035);
+      min-width: 0;
+      transition: transform .2s ease, box-shadow .2s ease;
+      cursor: zoom-in;
+    }
+
+    .meme:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 9px 22px rgba(70, 59, 44, .08);
+    }
+
+    .meme img {
+      display: block;
+      width: 100%;
+      height: 245px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f5f1e9;
+    }
+
+    .meme-index {
+      display: block;
+      padding: 8px 3px 1px;
+      color: #aaa397;
+      font-size: 10px;
+      letter-spacing: .08em;
+    }
+
+    footer {
+      text-align: center;
+      padding: 38px 0 58px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .footer-doodle {
+      font-size: 27px;
+      display: block;
+      margin-bottom: 9px;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: rgba(35, 34, 31, .88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: min(100%, 1050px);
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 15px 60px rgba(0, 0, 0, .25);
+    }
+
+    .close {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      border: 0;
+      background: transparent;
+      color: white;
+      font-size: 34px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 60px 0 38px;
+      }
+
+      .doodle.one {
+        left: 2%;
+        top: 25px;
+      }
+
+      .doodle.two {
+        right: 2%;
+        top: 45px;
+      }
+
+      .doodle.three {
+        display: none;
+      }
+
+      .gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 11px;
+        margin-left: 0;
+      }
+
+      .meme {
+        padding: 7px;
+        border-radius: 12px;
+      }
+
+      .meme img {
+        height: 190px;
+      }
+
+      .batch-caption {
+        margin-left: 0;
+      }
+
+      .batch {
+        padding: 30px 0 36px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .page {
+        width: min(100% - 24px, 1100px);
+      }
+
+      .gallery {
+        gap: 8px;
+      }
+
+      .meme img {
+        height: 160px;
+      }
+
+      .meme-index {
+        font-size: 9px;
+      }
+
+      .batch-heading {
+        gap: 10px;
+      }
+
+      .batch-number {
+        flex-basis: 29px;
+        width: 29px;
+        height: 29px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .meme {
+        transition: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header class="wrap">
-  <div class="eyebrow">Пятница · выпуск для своих</div>
-  <h1>Пятничный дайджест корпоративной жизни</h1>
-  <p class="intro">
-    Небольшие порции рабочего юмора на прощание с этой главой.
-    В каждом выпуске — не больше пяти мемов и готовая подпись для чата.
-  </p>
-  <div class="notice">
-    Картинки загружаются из существующей папки <code>assets</code>.
-    Её и имена файлов менять не нужно.
+  <div class="page">
+    <header>
+      <span class="doodle one">✿</span>
+      <span class="doodle two">☁</span>
+      <span class="doodle three">✧</span>
+
+      <div class="eyebrow">маленький архив большого рабочего опыта</div>
+      <h1>Мемы, которые многое объясняют</h1>
+      <p class="intro">
+        Собрала небольшую коллекцию рабочих наблюдений,
+        жизненных ситуаций и других важных документов эпохи.
+      </p>
+    </header>
+
+    <main id="content"></main>
+
+    <footer>
+      <span class="footer-doodle">☘</span>
+      Пусть дальше будет больше хорошего и меньше срочного.
+    </footer>
   </div>
-</header>
 
-<main class="wrap">
-  <nav aria-label="Выпуски">
-    <a href="#digest1">Рабочая классика</a>
-    <a href="#digest2">Поддержка животных</a>
-    <a href="#digest3">Срочно и вчера</a>
-    <a href="#digest4">Деньги и интеллект</a>
-    <a href="#digest5">Будущее</a>
-    <a href="#digest6">На дорожку</a>
-  </nav>
-  <div id="digests"></div>
-</main>
+  <div class="lightbox" id="lightbox" aria-label="Просмотр изображения">
+    <button class="close" id="closeLightbox" aria-label="Закрыть">×</button>
+    <img src="" alt="Увеличенное изображение" id="lightboxImage">
+  </div>
 
-<footer class="wrap">
-  Пусть следующий этап будет спокойнее, добрее и с меньшим количеством задач «на вчера».
-</footer>
+  <script>
+    const digests = [
+      {
+        title: "Работа мечты и прочие условия",
+        caption: "Пчёлы в офисе, удалёнка в шаговой доступности, вакансии мечты и условия, которые мы заслужили. Где-то между всем этим — обычный рабочий день.",
+        memes: [1, 6, 7, 8, 23]
+      },
+      {
+        title: "Постановка задач: попробуй выполни",
+        caption: "Когда задача звучит просто, критерии успеха туманны, а результат почему-то должен быть прекрасным. Отдельная благодарность за инициативу и умение разгоняться до завтра.",
+        memes: [3, 25, 28, 29, 14]
+      },
+      {
+        title: "Деньги, зарплата и другие ресурсы",
+        caption: "Финансовая грамотность, налоги, зарплата и попытки разумно распорядиться тем, что осталось. Экономика — наука тонкая.",
+        memes: [4, 15, 22, 26, 5]
+      },
+      {
+        title: "Будущее уже наступило. Кажется",
+        caption: "Искусственный интеллект, востребованные навыки, планы на пять лет и прочие вопросы, на которые пока нет единого ответа.",
+        memes: [10, 11, 18, 27, 2]
+      },
+      {
+        title: "Отдел психологической поддержки",
+        caption: "Коты, свиньи и другие специалисты по восстановлению душевного равновесия. Работают без записи и не назначают совещаний.",
+        memes: [9, 12, 16, 19, 20]
+      },
+      {
+        title: "Когда слов уже недостаточно",
+        caption: "Немного жизненной философии, немного абсурда и несколько изображений, которым не нужны дополнительные комментарии.",
+        memes: [13, 17, 21, 24]
+      }
+    ];
 
-<div class="toast" id="toast">Скопировано!</div>
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button type="button" onclick="closeLightbox()">Закрыть ✕</button>
-  <img id="largeImage" src="" alt="Мем в увеличенном виде">
-</div>
+    const content = document.getElementById('content');
 
-<script>
-const digests = [
-  {
-    id: "digest1",
-    tag: "Выпуск 01",
-    tone: "pink",
-    title: "Рабочая классика",
-    desc: "Задачи, офисные процессы и вакансии, которые теперь рассматриваем из научного интереса.",
-    caption: "Пятничный дайджест корпоративной жизни. В этом выпуске: новые задачи, неожиданные повороты и вакансии, которые мы теперь рассматриваем исключительно из научного интереса.",
-    items: [
-      [1, "png", "Доставка в офис и другие неконтролируемые процессы"],
-      [3, "png", "Пришла новая задача от руководителя"],
-      [6, "png", "Удалёнка, офис и вопросы без очевидного ответа"],
-      [7, "png", "Условия работы: мелкий шрифт"],
-      [8, "png", "Вакансия мечты или начало новой истории"]
-    ]
-  },
-  {
-    id: "digest2",
-    tag: "Выпуск 02",
-    tone: "green",
-    title: "Психологическая поддержка от животных",
-    desc: "Коты, собаки и другие специалисты по выживанию в рабочих обстоятельствах.",
-    caption: "Психологическая поддержка на сегодня: коты, собаки и прочие специалисты по выживанию. Принимают без записи, не назначают созвоны.",
-    items: [
-      [9, "png", "Доктор внимательно следит за рационом"],
-      [12, "png", "Кот и его режим существования"],
-      [13, "png", "Всё будет хорошо. Но будет сложно"],
-      [19, "png", "Не ругайте ленивых"],
-      [20, "png", "В гараже работают специалисты"]
-    ]
-  },
-  {
-    id: "digest3",
-    tag: "Выпуск 03",
-    tone: "yellow",
-    title: "Срочно, вчера и желательно без лишних вопросов",
-    desc: "Дедлайны, инициатива и вечное ощущение, что разогнаться надо было ещё позавчера.",
-    caption: "Специальный выпуск для тех, кто умеет разгоняться до завтра, работать ради работы и проявлять инициативу строго в безопасных количествах.",
-    items: [
-      [14, "png", "Вайбкодинг и последствия"],
-      [22, "png", "А за что, собственно, платят?"],
-      [24, "png", "Как работать ради работы?"],
-      [28, "jpg", "Нужно как-то разогнаться до завтра"],
-      [29, "jpg", "Притча об инициативе и инициаторе"]
-    ]
-  },
-  {
-    id: "digest4",
-    tag: "Выпуск 04",
-    tone: "blue",
-    title: "Деньги, интеллект и другие недоступные ресурсы",
-    desc: "Финансовая грамотность, здравый смысл и задачи с неожиданным решением.",
-    caption: "Выпуск о наших главных ресурсах: деньгах, интеллекте и способности решить задачу с первого раза. Спойлер: с ресурсами всё сложно.",
-    items: [
-      [4, "png", "Потратить деньги с умом — отдельный навык"],
-      [5, "png", "Когда интеллект и деньги не подтверждены"],
-      [15, "png", "Движение денег: загадка века"],
-      [17, "png", "Взгляд на себя со стороны"],
-      [25, "png", "Математический квест"]
-    ]
-  },
-  {
-    id: "digest5",
-    tag: "Выпуск 05",
-    tone: "pink",
-    title: "Новости, которые никто не просил",
-    desc: "ИИ, планы на будущее и странности, которые сложно объяснить.",
-    caption: "Будущее, искусственный интеллект и прочие события, к которым мы морально не готовились. Обсуждение принимается, объяснения необязательны.",
-    items: [
-      [2, "png", "Когда мечты принимают неожиданный оборот"],
-      [10, "png", "Мы в безопасности"],
-      [11, "png", "Ставка на искусственный интеллект"],
-      [18, "png", "Кем вы видите себя через пять лет?"],
-      [27, "jpg", "Когда разговор снова свернул не туда"]
-    ]
-  },
-  {
-    id: "digest6",
-    tag: "Финальный выпуск",
-    tone: "green",
-    title: "На дорожку — и дальше будет жизнь",
-    desc: "Ещё четыре картинки и немного человеческого тепла без корпоративного пафоса.",
-    caption: "На этой оптимистичной ноте завершаем выпуск. Спасибо всем, с кем довелось делить рабочие будни, мемы и странные ситуации. Пусть дальше у каждого будет побольше хорошего — и поменьше задач со статусом «срочно» ❤️",
-    items: [
-      [16, "png", "Наконец-то время на любимое дело"],
-      [21, "png", "Свиньи и корпоративная философия"],
-      [23, "png", "Большая доступность и ценность сотрудника"],
-      [26, "png", "Зарплата, удалёнка и жизненные планы"]
-    ]
-  }
-];
+    function imagePath(number) {
+      const index = String(number).padStart(2, '0');
+      const extension = number >= 27 ? 'jpg' : 'png';
+      return `assets/meme-${index}.${extension}`;
+    }
 
-function imagePath(number, extension) {
-  return "assets/meme-" + String(number).padStart(2, "0") + "." + extension;
-}
+    digests.forEach((digest, index) => {
+      const section = document.createElement('section');
+      section.className = 'batch';
 
-function createMemeCard(item) {
-  const [number, extension, title] = item;
-  const article = document.createElement("article");
-  article.className = "meme";
+      const heading = document.createElement('div');
+      heading.className = 'batch-heading';
 
-  const img = document.createElement("img");
-  img.src = imagePath(number, extension);
-  img.alt = "Мем №" + number + ": " + title;
-  img.loading = "lazy";
-  img.addEventListener("click", () => openLightbox(img.src));
+      const number = document.createElement('div');
+      number.className = 'batch-number';
+      number.textContent = String(index + 1).padStart(2, '0');
 
-  const body = document.createElement("div");
-  body.className = "meme-body";
+      const title = document.createElement('h2');
+      title.textContent = digest.title;
 
-  const numberLabel = document.createElement("div");
-  numberLabel.className = "num";
-  numberLabel.textContent = "МЕМ №" + String(number).padStart(2, "0");
+      heading.append(number, title);
 
-  const caption = document.createElement("div");
-  caption.className = "meme-title";
-  caption.textContent = title;
+      const caption = document.createElement('p');
+      caption.className = 'batch-caption';
+      caption.textContent = digest.caption;
 
-  const button = document.createElement("button");
-  button.className = "btn";
-  button.textContent = "Открыть крупнее";
-  button.addEventListener("click", () => openLightbox(img.src));
+      const gallery = document.createElement('div');
+      gallery.className = 'gallery';
 
-  body.append(numberLabel, caption, button);
-  article.append(img, body);
-  return article;
-}
+      digest.memes.forEach(memeNumber => {
+        const card = document.createElement('div');
+        card.className = 'meme';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Открыть изображение ${memeNumber}`);
 
-const root = document.getElementById("digests");
+        const img = document.createElement('img');
+        img.src = imagePath(memeNumber);
+        img.alt = `Мем ${memeNumber}`;
+        img.loading = 'lazy';
 
-digests.forEach(digest => {
-  const section = document.createElement("section");
-  section.className = "pack";
-  section.id = digest.id;
+        const label = document.createElement('span');
+        label.className = 'meme-index';
+        label.textContent = `№ ${String(memeNumber).padStart(2, '0')}`;
 
-  const head = document.createElement("div");
-  head.className = "pack-head";
+        card.append(img, label);
+        gallery.appendChild(card);
 
-  const tag = document.createElement("span");
-  tag.className = "tag " + digest.tone;
-  tag.textContent = digest.tag;
+        const openImage = () => showLightbox(img.src);
+        card.addEventListener('click', openImage);
+        card.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openImage();
+          }
+        });
+      });
 
-  const title = document.createElement("h2");
-  title.textContent = digest.title;
+      section.append(heading, caption, gallery);
+      content.appendChild(section);
+    });
 
-  const desc = document.createElement("p");
-  desc.className = "desc";
-  desc.textContent = digest.desc;
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
 
-  const captionBox = document.createElement("div");
-  captionBox.className = "caption";
+    function showLightbox(src) {
+      lightboxImage.src = src;
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
 
-  const label = document.createElement("div");
-  label.className = "label";
-  label.textContent = "Общая подпись для чата";
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      lightboxImage.src = '';
+      document.body.style.overflow = '';
+    }
 
-  const captionText = document.createElement("p");
-  captionText.textContent = digest.caption;
+    lightbox.addEventListener('click', event => {
+      if (event.target === lightbox) closeLightbox();
+    });
 
-  const actions = document.createElement("div");
-  actions.className = "actions";
+    document.getElementById('closeLightbox').addEventListener('click', closeLightbox);
 
-  const copyButton = document.createElement("button");
-  copyButton.className = "btn primary";
-  copyButton.textContent = "Копировать подпись";
-  copyButton.addEventListener("click", () => copyText(digest.caption));
-
-  actions.append(copyButton);
-  captionBox.append(label, captionText, actions);
-  head.append(tag, title, desc, captionBox);
-
-  const grid = document.createElement("div");
-  grid.className = "grid";
-  digest.items.forEach(item => grid.appendChild(createMemeCard(item)));
-
-  section.append(head, grid);
-  root.appendChild(section);
-});
-
-async function copyText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast("Подпись скопирована!");
-  } catch (error) {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.select();
-    const success = document.execCommand("copy");
-    textarea.remove();
-    showToast(success
-      ? "Подпись скопирована!"
-      : "Не получилось скопировать — выдели текст вручную."
-    );
-  }
-}
-
-let toastTimer;
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
-}
-
-function openLightbox(src) {
-  document.getElementById("largeImage").src = src;
-  document.getElementById("lightbox").classList.add("open");
-}
-
-function closeLightbox() {
-  document.getElementById("lightbox").classList.remove("open");
-}
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeLightbox();
-});
-</script>
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeLightbox();
+    });
+  </script>
 </body>
 </html>
