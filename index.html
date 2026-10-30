@@ -781,25 +781,11 @@ zoom.addEventListener('click', () => {
   zoomImage.src = '';
 });
 
-/* Реакции Supabase */
-const VISITOR_STORAGE_KEY = 'vneplanovy_visitor_id';
-
-function getVisitorId() {
-  let id = localStorage.getItem(VISITOR_STORAGE_KEY);
-
-  if (!id) {
-    id = crypto.randomUUID
-      ? crypto.randomUUID()
-      : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-    localStorage.setItem(VISITOR_STORAGE_KEY, id);
-  }
-
-  return id;
-}
-
-const visitorId = getVisitorId();
-const reactionRows = new Map();
+/* Реакции Supabase: Anonymous Auth + RPC + Broadcast */
+const reactionCounts = new Map();
+const myReactions = new Map();
+let authReady = false;
+let reactionsChannel = null;
 
 function setStatus(memeId, message) {
   const el = book.querySelector(
@@ -809,101 +795,97 @@ function setStatus(memeId, message) {
 }
 
 function renderReactionGroup(memeId) {
+  const id = String(memeId);
   const group = book.querySelector(
-    `[data-meme-id="${CSS.escape(String(memeId))}"]`
+    `[data-meme-id="${CSS.escape(id)}"]`
   );
   if (!group) return;
 
-  const rows = reactionRows.get(String(memeId)) || [];
-  const counts = {};
-
-  rows.forEach(row => {
-    counts[row.emoji] = (counts[row.emoji] || 0) + 1;
-  });
-
-  const mine = rows.find(row => row.visitor_id === visitorId)?.emoji || null;
+  const counts = reactionCounts.get(id) || {};
+  const selected = myReactions.get(id) || new Set();
 
   group.querySelectorAll('.reaction').forEach(button => {
     const emoji = button.dataset.emoji;
-    button.classList.toggle('selected', emoji === mine);
+    const isSelected = selected.has(emoji);
+    button.classList.toggle('selected', isSelected);
     button.querySelector('.count').textContent = counts[emoji] || 0;
-    button.setAttribute('aria-pressed', String(emoji === mine));
+    button.setAttribute('aria-pressed', String(isSelected));
   });
 }
 
-async function loadReactions() {
-  const ids = [...book.querySelectorAll('[data-meme-id]')]
-    .map(el => el.dataset.memeId);
+function renderAllReactionGroups() {
+  book.querySelectorAll('[data-meme-id]').forEach(group => {
+    renderReactionGroup(group.dataset.memeId);
+  });
+}
 
-  if (!ids.length) return;
+async function ensureAnonymousSession() {
+  const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
 
-  const { data, error } = await supabaseClient
-    .from('reactions')
-    .select('meme_id,visitor_id,emoji')
-    .in('meme_id', ids);
+  if (sessionError) throw sessionError;
+  if (sessionData.session) return;
 
-  if (error) {
-    ids.forEach(id => setStatus(id, 'Реакции пока недоступны'));
-    console.error('Supabase load error:', error);
-    return;
-  }
+  const { error } = await supabaseClient.auth.signInAnonymously();
+  if (error) throw error;
+}
 
-  reactionRows.clear();
-  ids.forEach(id => reactionRows.set(id, []));
+async function loadAllReactionCounts() {
+  const { data, error } = await supabaseClient.rpc('get_all_meme_reaction_counts');
+  if (error) throw error;
 
+  reactionCounts.clear();
   (data || []).forEach(row => {
     const id = String(row.meme_id);
-    if (!reactionRows.has(id)) reactionRows.set(id, []);
-    reactionRows.get(id).push(row);
+    if (!reactionCounts.has(id)) reactionCounts.set(id, {});
+    reactionCounts.get(id)[row.emoji] = Number(row.count) || 0;
   });
-
-  ids.forEach(renderReactionGroup);
+  renderAllReactionGroups();
 }
 
-async function refreshMeme(id) {
-  const { data, error } = await supabaseClient
-    .from('reactions')
-    .select('meme_id,visitor_id,emoji')
-    .eq('meme_id', id);
+async function loadMyReactions() {
+  const { data, error } = await supabaseClient.rpc('get_my_meme_reactions');
+  if (error) throw error;
 
-  if (error) return;
+  myReactions.clear();
+  (data || []).forEach(row => {
+    const id = String(row.meme_id);
+    if (!myReactions.has(id)) myReactions.set(id, new Set());
+    myReactions.get(id).add(row.emoji);
+  });
+  renderAllReactionGroups();
+}
 
-  reactionRows.set(String(id), data || []);
-  renderReactionGroup(String(id));
+async function refreshReactionData() {
+  await Promise.all([loadAllReactionCounts(), loadMyReactions()]);
 }
 
 async function chooseReaction(memeId, emoji) {
-  const id = String(memeId);
-  const rows = reactionRows.get(id) || [];
-  const current = rows.find(row => row.visitor_id === visitorId);
+  if (!authReady) return;
 
+  const id = String(memeId);
+  const selected = myReactions.get(id) || new Set();
+  const isSelected = selected.has(emoji);
   setStatus(id, 'Сохраняю…');
 
-  let result;
+  const { error } = await supabaseClient.rpc(
+    isSelected ? 'remove_meme_reaction' : 'set_meme_reaction',
+    { p_meme_id: id, p_emoji: emoji }
+  );
 
-  if (current?.emoji === emoji) {
-    result = await supabaseClient
-      .from('reactions')
-      .delete()
-      .eq('meme_id', id)
-      .eq('visitor_id', visitorId);
-  } else {
-    result = await supabaseClient
-      .from('reactions')
-      .upsert(
-        { meme_id: id, visitor_id: visitorId, emoji },
-        { onConflict: 'meme_id,visitor_id' }
-      );
-  }
-
-  if (result.error) {
+  if (error) {
     setStatus(id, 'Не удалось сохранить реакцию');
-    console.error('Supabase reaction error:', result.error);
+    console.error('Supabase reaction RPC error:', error);
     return;
   }
 
-  await refreshMeme(id);
-  setStatus(id, '');
+  try {
+    await refreshReactionData();
+    setStatus(id, '');
+  } catch (refreshError) {
+    console.error('Supabase reaction refresh error:', refreshError);
+    setStatus(id, 'Реакция сохранена, но счётчики пока не обновились');
+  }
 }
 
 book.addEventListener('click', event => {
@@ -912,26 +894,40 @@ book.addEventListener('click', event => {
 
   const group = button.closest('[data-meme-id]');
   if (!group) return;
-
   chooseReaction(group.dataset.memeId, button.dataset.emoji);
 });
 
-loadReactions();
+async function initReactions() {
+  try {
+    await ensureAnonymousSession();
+    authReady = true;
+    await refreshReactionData();
 
-supabaseClient
-  .channel('public-reactions')
-  .on(
-    'postgres_changes',
-    { event: '*', schema: 'public', table: 'reactions' },
-    payload => {
-      const id = String(
-        payload.new?.meme_id ?? payload.old?.meme_id ?? ''
-      );
-      if (id) refreshMeme(id);
-    }
-  )
-  .subscribe();
+    reactionsChannel = supabaseClient
+      .channel('meme-reactions')
+      .on('broadcast', { event: 'reaction_counts' }, async ({ payload }) => {
+        const memeId = payload?.meme_id;
+        if (memeId == null) return;
 
+        const counts = payload.counts || {};
+        reactionCounts.set(String(memeId), counts);
+        renderReactionGroup(memeId);
+      })
+      .subscribe(status => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('Supabase Broadcast subscription status:', status);
+        }
+      });
+  } catch (error) {
+    authReady = false;
+    console.error('Supabase reactions initialization error:', error);
+    book.querySelectorAll('[data-meme-id]').forEach(group => {
+      setStatus(group.dataset.memeId, 'Не удалось подключиться к реакциям');
+    });
+  }
+}
+
+initReactions();
 updateBook();
 </script>
 </body>
