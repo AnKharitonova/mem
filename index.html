@@ -401,32 +401,6 @@ body {
 
 .two-memes .meme-unit { min-width: 0; }
 
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 0 16px 22px;
-}
-
-.nav-button {
-  border: 1px solid #bfb5a5;
-  background: rgba(248,243,232,.85);
-  color: var(--ink);
-  padding: 11px 20px;
-  border-radius: 30px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: .2s;
-}
-
-.nav-button:hover:not(:disabled) {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.nav-button:disabled { opacity: .35; cursor: default; }
-
 .page-counter {
   min-width: 95px;
   text-align: center;
@@ -478,27 +452,15 @@ body {
 }
 
 @media (max-width: 600px) {
-  /* На телефонах используем лёгкое перелистывание без тяжёлого 3D */
   .book-area { perspective: none; }
   .book {
+    transform: none;
     transform-style: flat;
     filter: none;
-    will-change: auto;
     contain: layout paint;
   }
-  .sheet {
-    transform-style: flat;
-    transform-origin: center center;
-    transition: opacity .18s ease, transform .22s ease;
-    backface-visibility: visible;
-    -webkit-backface-visibility: visible;
-    will-change: transform, opacity;
-  }
-  .sheet.flipped {
-    transform: translate3d(-10px, 0, 0);
-    opacity: 0;
-    pointer-events: none;
-  }
+  .sheet { display: none; transform: none !important; transition: none !important; }
+  .sheet.active { display: block; }
   .page.back { display: none; }
   .topbar { padding: 13px 15px; font-size: 9px; }
   .topbar strong { font-size: 14px; }
@@ -514,19 +476,15 @@ body {
   .article-kicker { font-size: 8px; margin-top: 8px; }
   .meme-caption { font-size: 11px; }
   .two-memes { gap: 6px; }
-  .controls { gap: 10px; }
-  .nav-button { padding: 10px 14px; font-size: 11px; }
   .page-counter { min-width: 65px; font-size: 10px; }
   .reactions { gap: 4px; padding: 3px 0; }
   .reaction { padding: 3px 6px; min-height: 26px; gap: 3px; }
   .reaction .emoji { font-size: 14px; }
   .reaction .count { font-size: 9px; }
   .reaction:hover { transform: none; }
-  .nav-button:hover:not(:disabled) { background: rgba(248,243,232,.85); color: var(--ink); }
 }
 </style>
 </head>
-
 <body>
 <div class="topbar">
   <strong>Внеплановый выпуск</strong>
@@ -541,13 +499,9 @@ body {
   <div class="progress-bar" id="progressBar"></div>
 </div>
 
-<div class="controls">
-  <button class="nav-button" id="prev">← Назад</button>
-  <div class="page-counter" id="counter">Обложка</div>
-  <button class="nav-button" id="next">Далее →</button>
-</div>
+<div class="page-counter" id="counter">Обложка</div>
 
-<div class="hint">Листай по одной странице: кнопками, стрелками клавиатуры или свайпом</div>
+<div class="hint">Листай журнал свайпом влево или вправо</div>
 
 <div class="zoom" id="zoom">
   <img src="" alt="Увеличенное изображение" id="zoomImage">
@@ -582,7 +536,6 @@ const pages = [
     title:'В этом выпуске',
     text:'Немного рабочих хроник, карьерных перспектив, финансовых открытий и наблюдений за окружающей действительностью.',
     second:'Всё, что хотелось сказать, но иногда проще показать картинкой.',
-    ornament:'✳',
     contents:[
       ['Рабочие хроники','03–14'],
       ['Деньги и технологии','15–20'],
@@ -709,7 +662,7 @@ function makePage(data, pageNumber) {
         <div class="contents" aria-label="Содержание выпуска">
           ${data.contents.map(([label, range]) => `<div class="contents-item"><span>${label}</span><span>${range}</span></div>`).join('')}
         </div>
-        <div class="ornament">${data.ornament}</div>
+        <div class="ornament">${data.ornament || ''}</div>
         ${makeFooter(pageNumber)}
       </div>`;
   }
@@ -754,17 +707,13 @@ function makePage(data, pageNumber) {
       ${makeFooter(pageNumber)}
     </div>`;
 }
-
-const book = document.getElementById('book');
+  const book = document.getElementById('book');
 const counter = document.getElementById('counter');
 const progressBar = document.getElementById('progressBar');
-const prevButton = document.getElementById('prev');
-const nextButton = document.getElementById('next');
 
 const sheets = [];
 
-// Каждый материал — отдельный лист. Так перелистывание проходит
-// последовательно по всем страницам, включая чётные.
+// Каждый материал — отдельный лист.
 for (let i = 0; i < pages.length; i++) {
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
@@ -783,7 +732,6 @@ for (let i = 0; i < pages.length; i++) {
 }
 
 let currentSheet = 0;
-let isAnimating = false;
 
 sheets.forEach((sheet, index) => {
   sheet.style.zIndex = sheets.length - index;
@@ -792,9 +740,8 @@ sheets.forEach((sheet, index) => {
 function updateBook() {
   sheets.forEach((sheet, index) => {
     sheet.classList.toggle('flipped', index < currentSheet);
-    sheet.style.zIndex = index < currentSheet
-      ? index + 1
-      : sheets.length - index;
+    sheet.classList.toggle('active', index === currentSheet);
+    sheet.style.zIndex = index === currentSheet ? 1 : 0;
   });
 
   const currentPage = Math.min(currentSheet + 1, pages.length);
@@ -802,30 +749,20 @@ function updateBook() {
     ? 'Обложка · 1 / ' + pages.length
     : `${currentPage} / ${pages.length}`;
 
-  prevButton.disabled = currentSheet === 0;
-  nextButton.disabled = currentSheet >= sheets.length;
-
   progressBar.style.width = `${(currentSheet / sheets.length) * 100}%`;
 }
 
 function nextPage() {
-  if (currentSheet >= sheets.length || isAnimating) return;
+  if (currentSheet >= sheets.length - 1) return;
   currentSheet++;
   updateBook();
-  isAnimating = true;
-  setTimeout(() => isAnimating = false, 850);
 }
 
 function prevPage() {
-  if (currentSheet <= 0 || isAnimating) return;
+  if (currentSheet <= 0) return;
   currentSheet--;
   updateBook();
-  isAnimating = true;
-  setTimeout(() => isAnimating = false, 850);
 }
-
-nextButton.addEventListener('click', nextPage);
-prevButton.addEventListener('click', prevPage);
 
 document.addEventListener('keydown', event => {
   if (event.key === 'ArrowRight') nextPage();
@@ -833,22 +770,30 @@ document.addEventListener('keydown', event => {
 });
 
 let touchStartX = 0;
+let touchStartY = 0;
 let touchStartedOnControl = false;
 
 book.addEventListener('touchstart', event => {
-  touchStartedOnControl = Boolean(event.target.closest('button, a, .reactions, [data-zoom]'));
+  touchStartedOnControl = Boolean(
+    event.target.closest('button, a, .reactions, [data-zoom]')
+  );
   touchStartX = event.changedTouches[0].screenX;
+  touchStartY = event.changedTouches[0].screenY;
 }, { passive: true });
 
 book.addEventListener('touchend', event => {
-  // Taps and horizontal gestures on reaction buttons or images must never turn a page.
-  if (touchStartedOnControl || event.target.closest('button, a, .reactions, [data-zoom]')) {
+  if (touchStartedOnControl ||
+      event.target.closest('button, a, .reactions, [data-zoom]')) {
     touchStartedOnControl = false;
     return;
   }
-  const delta = event.changedTouches[0].screenX - touchStartX;
-  if (Math.abs(delta) < 55) return;
-  if (delta < 0) nextPage();
+
+  const deltaX = event.changedTouches[0].screenX - touchStartX;
+  const deltaY = event.changedTouches[0].screenY - touchStartY;
+
+  if (Math.abs(deltaX) < 55 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+  if (deltaX < 0) nextPage();
   else prevPage();
 }, { passive: true });
 
@@ -869,7 +814,7 @@ zoom.addEventListener('click', () => {
   zoomImage.src = '';
 });
 
-/* Реакции Supabase: Anonymous Auth + RPC + Broadcast */
+/* Реакции Supabase */
 const reactionCounts = new Map();
 const myReactions = new Map();
 let authReady = false;
@@ -895,6 +840,7 @@ function renderReactionGroup(memeId) {
   group.querySelectorAll('.reaction').forEach(button => {
     const emoji = button.dataset.emoji;
     const isSelected = selected.has(emoji);
+
     button.classList.toggle('selected', isSelected);
     button.querySelector('.count').textContent = counts[emoji] || 0;
     button.setAttribute('aria-pressed', String(isSelected));
@@ -919,33 +865,46 @@ async function ensureAnonymousSession() {
 }
 
 async function loadAllReactionCounts() {
-  const { data, error } = await supabaseClient.rpc('get_all_meme_reaction_counts');
+  const { data, error } = await supabaseClient.rpc(
+    'get_all_meme_reaction_counts'
+  );
   if (error) throw error;
 
   reactionCounts.clear();
+
   (data || []).forEach(row => {
     const id = String(row.meme_id);
+
     if (!reactionCounts.has(id)) reactionCounts.set(id, {});
     reactionCounts.get(id)[row.emoji] = Number(row.count) || 0;
   });
+
   renderAllReactionGroups();
 }
 
 async function loadMyReactions() {
-  const { data, error } = await supabaseClient.rpc('get_my_meme_reactions');
+  const { data, error } = await supabaseClient.rpc(
+    'get_my_meme_reactions'
+  );
   if (error) throw error;
 
   myReactions.clear();
+
   (data || []).forEach(row => {
     const id = String(row.meme_id);
+
     if (!myReactions.has(id)) myReactions.set(id, new Set());
     myReactions.get(id).add(row.emoji);
   });
+
   renderAllReactionGroups();
 }
 
 async function refreshReactionData() {
-  await Promise.all([loadAllReactionCounts(), loadMyReactions()]);
+  await Promise.all([
+    loadAllReactionCounts(),
+    loadMyReactions()
+  ]);
 }
 
 const reactionRequests = new Set();
@@ -955,19 +914,25 @@ async function chooseReaction(memeId, emoji) {
 
   const id = String(memeId);
   const requestKey = `${id}:${emoji}`;
+
   if (reactionRequests.has(requestKey)) return;
   reactionRequests.add(requestKey);
 
   const selected = myReactions.get(id) || new Set();
   const wasSelected = selected.has(emoji);
   const nextSelected = new Set(selected);
+
   if (wasSelected) nextSelected.delete(emoji);
   else nextSelected.add(emoji);
 
-  // Update this meme immediately; do not reload every reaction on every click.
   myReactions.set(id, nextSelected);
+
   const counts = { ...(reactionCounts.get(id) || {}) };
-  counts[emoji] = Math.max(0, (Number(counts[emoji]) || 0) + (wasSelected ? -1 : 1));
+  counts[emoji] = Math.max(
+    0,
+    (Number(counts[emoji]) || 0) + (wasSelected ? -1 : 1)
+  );
+
   reactionCounts.set(id, counts);
   renderReactionGroup(id);
   setStatus(id, 'Сохраняю…');
@@ -975,19 +940,30 @@ async function chooseReaction(memeId, emoji) {
   try {
     const { error } = await supabaseClient.rpc(
       wasSelected ? 'remove_meme_reaction' : 'set_meme_reaction',
-      { p_meme_id: id, p_emoji: emoji }
+      {
+        p_meme_id: id,
+        p_emoji: emoji
+      }
     );
+
     if (error) throw error;
     setStatus(id, '');
+
   } catch (error) {
-    // Roll back the optimistic update if the server rejected the change.
     myReactions.set(id, selected);
+
     const rollbackCounts = { ...(reactionCounts.get(id) || {}) };
-    rollbackCounts[emoji] = Math.max(0, (Number(rollbackCounts[emoji]) || 0) + (wasSelected ? 1 : -1));
+    rollbackCounts[emoji] = Math.max(
+      0,
+      (Number(rollbackCounts[emoji]) || 0) + (wasSelected ? 1 : -1)
+    );
+
     reactionCounts.set(id, rollbackCounts);
     renderReactionGroup(id);
     setStatus(id, 'Не удалось сохранить реакцию');
+
     console.error('Supabase reaction RPC error:', error);
+
   } finally {
     reactionRequests.delete(requestKey);
   }
@@ -999,6 +975,7 @@ book.addEventListener('click', event => {
 
   const group = button.closest('[data-meme-id]');
   if (!group) return;
+
   chooseReaction(group.dataset.memeId, button.dataset.emoji);
 });
 
@@ -1006,26 +983,32 @@ async function initReactions() {
   try {
     await ensureAnonymousSession();
     authReady = true;
+
     await refreshReactionData();
 
     reactionsChannel = supabaseClient
       .channel('meme-reactions')
-      .on('broadcast', { event: 'reaction_counts' }, async ({ payload }) => {
-        const memeId = payload?.meme_id;
-        if (memeId == null) return;
+      .on(
+        'broadcast',
+        { event: 'reaction_counts' },
+        ({ payload }) => {
+          const memeId = payload?.meme_id;
+          if (memeId == null) return;
 
-        const counts = payload.counts || {};
-        reactionCounts.set(String(memeId), counts);
-        renderReactionGroup(memeId);
-      })
+          reactionCounts.set(String(memeId), payload.counts || {});
+          renderReactionGroup(memeId);
+        }
+      )
       .subscribe(status => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.warn('Supabase Broadcast subscription status:', status);
         }
       });
+
   } catch (error) {
     authReady = false;
     console.error('Supabase reactions initialization error:', error);
+
     book.querySelectorAll('[data-meme-id]').forEach(group => {
       setStatus(group.dataset.memeId, 'Не удалось подключиться к реакциям');
     });
