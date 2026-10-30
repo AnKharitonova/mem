@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#e8e0d1">
 <title>Внеплановый выпуск</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
@@ -22,9 +23,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse at 50% 10%, #f7f0e4, transparent 65%),
-    #d9d0c1;
+  background: radial-gradient(ellipse at 50% 10%, #f7f0e4, transparent 65%), #d9d0c1;
   color: var(--ink);
   font-family: 'Manrope', sans-serif;
   display: flex;
@@ -80,9 +79,7 @@ body {
   transition: transform .85s cubic-bezier(.2,.65,.25,1);
 }
 
-.sheet.flipped {
-  transform: rotateY(-180deg);
-}
+.sheet.flipped { transform: rotateY(-180deg); }
 
 .page {
   position: absolute;
@@ -109,6 +106,7 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  min-height: 0;
 }
 
 .page-header {
@@ -132,6 +130,7 @@ body {
   color: var(--muted);
   font-size: 9px;
   letter-spacing: .08em;
+  flex-shrink: 0;
 }
 
 .cover {
@@ -157,14 +156,14 @@ body {
   font-size: 19px;
   font-style: italic;
   color: var(--accent);
-  margin-top: 25px;
+  margin-top: 20px;
 }
 
 .cover .cover-line {
   width: 70px;
   height: 2px;
   background: var(--accent);
-  margin: 27px auto;
+  margin: 22px auto;
 }
 
 .cover .cover-note {
@@ -176,8 +175,15 @@ body {
 
 .cover .cover-decoration {
   font-size: 42px;
-  margin-top: 40px;
+  margin-top: 20px;
   opacity: .8;
+}
+
+.cover .cover-police {
+  width: min(190px, 42%);
+  max-height: 145px;
+  object-fit: contain;
+  margin-top: 16px;
 }
 
 .cover .issue {
@@ -224,13 +230,11 @@ body {
   color: var(--accent);
 }
 
-.article-page {
-  gap: 14px;
-}
+.article-page { gap: 12px; }
 
 .article-title {
   font: 700 clamp(22px, 3.3vw, 32px)/1.2 'Playfair Display', serif;
-  margin: 18px 0 0;
+  margin: 14px 0 0;
 }
 
 .article-subtitle {
@@ -276,9 +280,7 @@ body {
   min-height: 0;
 }
 
-.two-memes .meme-frame {
-  min-width: 0;
-}
+.two-memes .meme-frame { min-width: 0; }
 
 .two-memes img {
   max-width: 100%;
@@ -295,15 +297,74 @@ body {
     var(--paper);
 }
 
-.back-cover h2 {
-  font: 700 38px 'Playfair Display', serif;
-}
+.back-cover h2 { font: 700 38px 'Playfair Display', serif; }
 
 .back-cover p {
   max-width: 390px;
   color: var(--muted);
   font: italic 17px/1.7 'Playfair Display', serif;
 }
+
+/* Реакции */
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 0 1px;
+  flex-shrink: 0;
+}
+
+.reaction {
+  border: 1px solid #d8cebd;
+  background: rgba(255,255,255,.48);
+  border-radius: 18px;
+  padding: 4px 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #5e574d;
+  font: 11px 'Manrope', sans-serif;
+  cursor: pointer;
+  transition: .15s;
+  min-height: 29px;
+}
+
+.reaction:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.reaction.selected {
+  background: #f0dfd2;
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(182,94,66,.15);
+}
+
+.reaction .emoji { font-size: 15px; line-height: 1; }
+.reaction .count {
+  font-size: 10px;
+  color: #81796c;
+  font-variant-numeric: tabular-nums;
+}
+
+.reaction-status {
+  font-size: 9px;
+  color: var(--muted);
+  text-align: center;
+  min-height: 11px;
+  flex-shrink: 0;
+}
+
+.meme-unit {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 3px;
+}
+
+.two-memes .meme-unit { min-width: 0; }
 
 .controls {
   display: flex;
@@ -329,10 +390,7 @@ body {
   color: var(--paper);
 }
 
-.nav-button:disabled {
-  opacity: .35;
-  cursor: default;
-}
+.nav-button:disabled { opacity: .35; cursor: default; }
 
 .page-counter {
   min-width: 95px;
@@ -385,52 +443,29 @@ body {
 }
 
 @media (max-width: 600px) {
-  .topbar {
-    padding: 13px 15px;
-    font-size: 9px;
-  }
-
+  .topbar { padding: 13px 15px; font-size: 9px; }
   .topbar strong { font-size: 14px; }
-
   .book-area { padding: 5px 10px 15px; }
-
-  .book {
-    width: 94vw;
-    height: min(680px, 72vh);
-    min-height: 430px;
-  }
-
+  .book { width: 94vw; height: min(680px, 72vh); min-height: 430px; }
   .page { padding: 22px 19px; }
-
   .cover .masthead { font-size: clamp(39px, 11vw, 62px); }
-
   .cover .subtitle { font-size: 16px; }
-
   .article-title { font-size: 23px; }
-
   .article-subtitle { font-size: 10px; }
-
   .meme-caption { font-size: 11px; }
-
   .two-memes { gap: 6px; }
-
   .controls { gap: 10px; }
-
-  .nav-button {
-    padding: 10px 14px;
-    font-size: 11px;
-  }
-
-  .page-counter {
-    min-width: 65px;
-    font-size: 10px;
-  }
+  .nav-button { padding: 10px 14px; font-size: 11px; }
+  .page-counter { min-width: 65px; font-size: 10px; }
+  .reactions { gap: 4px; padding: 3px 0; }
+  .reaction { padding: 3px 6px; min-height: 26px; gap: 3px; }
+  .reaction .emoji { font-size: 14px; }
+  .reaction .count { font-size: 9px; }
 }
 </style>
 </head>
 
 <body>
-
 <div class="topbar">
   <strong>Внеплановый выпуск</strong>
   <span>Специальное издание · № 01</span>
@@ -457,189 +492,86 @@ body {
 </div>
 
 <script>
-const pages = [
-  {
-    type: 'cover'
-  },
-  {
-    type: 'editorial',
-    title: 'В этом выпуске',
-    text: 'Немного рабочих хроник, карьерных перспектив, финансовых открытий и наблюдений за окружающей действительностью.',
-    second: 'Всё, что хотелось сказать, но иногда проще показать картинкой.',
-    ornament: '✳'
-  },
+const SUPABASE_URL = 'https://casdmfsctsalhukxesfa.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_PZbL9baH6Aqa84O74Vvkxw_p01Q85Xs';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  {
-    title: 'Рабочие будни',
-    subtitle: 'Когда обычный день снова оказался не таким уж обычным',
-    memes: [1]
-  },
-  {
-    title: 'Новые вводные',
-    subtitle: 'Постановка задач и тонкости рабочего процесса',
-    memes: [3]
-  },
-  {
-    title: 'Удалёнка с нюансами',
-    subtitle: 'Офис, дом и всё, что между ними',
-    memes: [6]
-  },
-  {
-    title: 'Рабочая атмосфера',
-    subtitle: 'Условия, ожидания и комментарии из жизни',
-    memes: [7]
-  },
-  {
-    title: 'Вакансия мечты',
-    subtitle: 'Карьерные перспективы бывают неожиданными',
-    memes: [8]
-  },
-
-  {
-    title: 'Вопросы трудоустройства',
-    subtitle: 'Ожидания и реальность',
-    memes: [22]
-  },
-  {
-    title: 'Ценность специалиста',
-    subtitle: 'Иногда лучше просто взять паузу',
-    memes: [23]
-  },
-  {
-    title: 'Планы на рост',
-    subtitle: 'Когда цели компании звучат особенно амбициозно',
-    memes: [25]
-  },
-  {
-    title: 'Мотивация',
-    subtitle: 'Работа, зарплата и замкнутые круги',
-    memes: [26]
-  },
-  {
-    title: 'Срочность',
-    subtitle: 'Вчера было бы идеально',
-    memes: [28]
-  },
-
-  {
-    title: 'Финансовые вопросы',
-    subtitle: 'Попытки обращаться с деньгами разумно',
-    memes: [4]
-  },
-  {
-    title: 'Интеллектуальный капитал',
-    subtitle: 'Когда ресурсов не хватает ни с одной стороны',
-    memes: [5]
-  },
-  {
-    title: 'Налог на продуктивность',
-    subtitle: 'Экономические открытия',
-    memes: [15]
-  },
-
-  {
-    title: 'Технологическое будущее',
-    subtitle: 'Мы в безопасности. Наверное.',
-    memes: [10]
-  },
-  {
-    title: 'Искусственный интеллект',
-    subtitle: 'Новые технологии и старые вопросы',
-    memes: [11]
-  },
-  {
-    title: 'Токены и аппетиты',
-    subtitle: 'Когда технологии дорожают',
-    memes: [14]
-  },
-  {
-    title: 'Пятилетний план',
-    subtitle: 'Кем мы видим себя в будущем?',
-    memes: [18]
-  },
-  {
-    title: 'Новые горизонты',
-    subtitle: 'Будущее обещает быть интересным',
-    memes: [27]
-  },
-
-  {
-    title: 'Особая рубрика: коты',
-    subtitle: 'У них тоже есть профессиональное мнение',
-    memes: [9]
-  },
-  {
-    title: 'Наблюдения из жизни',
-    subtitle: 'Иногда достаточно просто посмотреть',
-    memes: [12]
-  },
-  {
-    title: 'Всё будет хорошо',
-    subtitle: 'Но, возможно, не совсем просто',
-    memes: [13]
-  },
-  {
-    title: 'Любимое занятие',
-    subtitle: 'Выходные — время важных дел',
-    memes: [16]
-  },
-  {
-    title: 'Философия безделья',
-    subtitle: 'Некоторые достижения не нуждаются в отчёте',
-    memes: [19]
-  },
-  {
-    title: 'Специалисты на месте',
-    subtitle: 'Всё под контролем. Почти.',
-    memes: [20]
-  },
-  {
-    title: 'Жизнь в деталях',
-    subtitle: 'У каждого свои обстоятельства',
-    memes: [21]
-  },
-
-  {
-    title: 'Взгляд со стороны',
-    subtitle: 'Когда пытаешься осмыслить происходящее',
-    memes: [17]
-  },
-  {
-    title: 'Важный вопрос',
-    subtitle: 'О работе, смысле и прекрасном',
-    memes: [24]
-  },
-
-  {
-    type: 'two',
-    title: 'Тигриная мудрость',
-    subtitle: 'Две важные публикации о жизни и инициативе',
-    memes: [2, 29]
-  },
-  {
-    type: 'back'
-  }
+const EMOJIS = [
+  {emoji:'😂',label:'Угар'},
+  {emoji:'💀',label:'Очень смешно'},
+  {emoji:'😭',label:'ОРУ'},
+  {emoji:'🗿',label:'Сигма-фейс'},
+  {emoji:'🤡',label:'Кринж'},
+  {emoji:'🥹',label:'Умиление'},
+  {emoji:'🫠',label:'Неловкость, усталость'},
+  {emoji:'💅',label:'Сарказм, уверенность'},
+  {emoji:'🔥',label:'Имба'},
+  {emoji:'✨',label:'Эстетика'},
+  {emoji:'🫡',label:'Принято'},
+  {emoji:'❤️',label:'Сердце'},
+  {emoji:'👀',label:'Интрига'},
+  {emoji:'🐸',label:'Абсурд'}
 ];
 
-const book = document.getElementById('book');
-const counter = document.getElementById('counter');
-const progressBar = document.getElementById('progressBar');
-const prevButton = document.getElementById('prev');
-const nextButton = document.getElementById('next');
+const pages = [
+  {type:'cover'},
+  {
+    type:'editorial',
+    title:'В этом выпуске',
+    text:'Немного рабочих хроник, карьерных перспектив, финансовых открытий и наблюдений за окружающей действительностью.',
+    second:'Всё, что хотелось сказать, но иногда проще показать картинкой.',
+    ornament:'✳'
+  },
+  {title:'Рабочие будни',subtitle:'Когда обычный день снова оказался не таким уж обычным',memes:[1]},
+  {title:'Новые вводные',subtitle:'Постановка задач и тонкости рабочего процесса',memes:[3]},
+  {title:'Удалёнка с нюансами',subtitle:'Офис, дом и всё, что между ними',memes:[6]},
+  {title:'Рабочая атмосфера',subtitle:'Условия, ожидания и комментарии из жизни',memes:[7]},
+  {title:'Вакансия мечты',subtitle:'Карьерные перспективы бывают неожиданными',memes:[8]},
+  {title:'Вопросы трудоустройства',subtitle:'Ожидания и реальность',memes:[22]},
+  {title:'Ценность специалиста',subtitle:'Иногда лучше просто взять паузу',memes:[23]},
+  {title:'Планы на рост',subtitle:'Когда цели компании звучат особенно амбициозно',memes:[25]},
+  {title:'Мотивация',subtitle:'Работа, зарплата и замкнутые круги',memes:[26]},
+  {title:'Срочность',subtitle:'Вчера было бы идеально',memes:[28]},
+  {title:'Финансовые вопросы',subtitle:'Попытки обращаться с деньгами разумно',memes:[4]},
+  {title:'Интеллектуальный капитал',subtitle:'Когда ресурсов не хватает ни с одной стороны',memes:[5]},
+  {title:'Налог на продуктивность',subtitle:'Экономические открытия',memes:[15]},
+  {title:'Технологическое будущее',subtitle:'Мы в безопасности. Наверное.',memes:[10]},
+  {title:'Искусственный интеллект',subtitle:'Новые технологии и старые вопросы',memes:[11]},
+  {title:'Токены и аппетиты',subtitle:'Когда технологии дорожают',memes:[14]},
+  {title:'Пятилетний план',subtitle:'Кем мы видим себя в будущем?',memes:[18]},
+  {title:'Новые горизонты',subtitle:'Будущее обещает быть интересным',memes:[27]},
+  {title:'Особая рубрика: коты',subtitle:'У них тоже есть профессиональное мнение',memes:[9]},
+  {title:'Два состояния',subtitle:'Нарядная и разлагаюсь',memes:['rat']},
+  {title:'Наблюдения из жизни',subtitle:'Иногда достаточно просто посмотреть',memes:[12]},
+  {title:'Всё будет хорошо',subtitle:'Но, возможно, не совсем просто',memes:[13]},
+  {title:'Любимое занятие',subtitle:'Выходные — время важных дел',memes:[16]},
+  {title:'Философия безделья',subtitle:'Некоторые достижения не нуждаются в отчёте',memes:[19]},
+  {title:'Специалисты на месте',subtitle:'Всё под контролем. Почти.',memes:[20]},
+  {title:'Жизнь в деталях',subtitle:'У каждого свои обстоятельства',memes:[21]},
+  {title:'Взгляд со стороны',subtitle:'Когда пытаешься осмыслить происходящее',memes:[17]},
+  {title:'Важный вопрос',subtitle:'О работе, смысле и прекрасном',memes:[24]},
+  {
+    type:'two',
+    title:'Тигриная мудрость',
+    subtitle:'Две важные публикации о жизни и инициативе',
+    memes:[2,29]
+  },
+  {type:'back'}
+];
 
 function assetPath(number) {
+  if (number === 'rat') return 'assets/rat.png';
   const name = String(number).padStart(2, '0');
   const extension = number >= 27 ? 'jpg' : 'png';
   return `assets/meme-${name}.${extension}`;
 }
 
-function makeHeader(pageNumber) {
+function makeHeader() {
   return `
     <div class="page-header">
       <span>Внеплановый выпуск</span>
       <span>Специальное издание</span>
-    </div>
-  `;
+    </div>`;
 }
 
 function makeFooter(pageNumber) {
@@ -647,12 +579,34 @@ function makeFooter(pageNumber) {
     <div class="page-footer">
       <span>Хроники одной рабочей эпохи</span>
       <span>${pageNumber}</span>
-    </div>
-  `;
+    </div>`;
 }
 
 function makeMeme(number) {
-  return `<img src="${assetPath(number)}" alt="Мем ${number}" loading="lazy" data-zoom>`;
+  const alt = number === 'rat' ? 'Мем: два состояния' : `Мем ${number}`;
+  return `<img src="${assetPath(number)}" alt="${alt}" loading="lazy" data-zoom>`;
+}
+
+function reactionMarkup(id) {
+  return `
+    <div class="reactions" data-meme-id="${id}">
+      ${EMOJIS.map(({emoji,label}) => `
+        <button class="reaction" type="button"
+          data-emoji="${emoji}" title="${label}" aria-label="${label}">
+          <span class="emoji">${emoji}</span>
+          <span class="count" data-count="${emoji}">0</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="reaction-status" data-status-for="${id}" aria-live="polite"></div>`;
+}
+
+function memeBlock(id) {
+  return `
+    <div class="meme-unit" data-meme-unit="${id}">
+      <div class="meme-frame">${makeMeme(id)}</div>
+      ${reactionMarkup(id)}
+    </div>`;
 }
 
 function makePage(data, pageNumber) {
@@ -663,24 +617,23 @@ function makePage(data, pageNumber) {
         <div class="masthead">ВНЕПЛАНОВЫЙ<br>ВЫПУСК</div>
         <div class="cover-line"></div>
         <div class="subtitle">Хроники, наблюдения и другие важные события</div>
+        <img class="cover-police" src="assets/police.png" alt="Иллюстрация на обложке">
         <div class="cover-decoration">✳</div>
         <div class="issue">29 ИЛЛЮСТРАЦИЙ · ОДНА НЕПРОСТАЯ ЭПОХА</div>
-      </div>
-    `;
+      </div>`;
   }
 
   if (data.type === 'editorial') {
     return `
       <div class="page-inner editorial">
-        ${makeHeader(pageNumber)}
+        ${makeHeader()}
         <div class="small-title">От редакции</div>
         <h2>${data.title}</h2>
         <p>${data.text}</p>
         <p>${data.second}</p>
         <div class="ornament">${data.ornament}</div>
         ${makeFooter(pageNumber)}
-      </div>
-    `;
+      </div>`;
   }
 
   if (data.type === 'back') {
@@ -690,42 +643,42 @@ function makePage(data, pageNumber) {
         <h2>До новых встреч!</h2>
         <p>Пусть впереди будет много интересных историй, хороших людей и поводов для улыбки.</p>
         <div class="cover-decoration">✳</div>
-      </div>
-    `;
+      </div>`;
   }
 
   if (data.type === 'two') {
     return `
       <div class="page-inner article-page">
-        ${makeHeader(pageNumber)}
+        ${makeHeader()}
         <div>
           <h2 class="article-title">${data.title}</h2>
           <div class="article-subtitle">${data.subtitle}</div>
         </div>
         <div class="two-memes">
-          ${data.memes.map(number => `
-            <div class="meme-frame">${makeMeme(number)}</div>
-          `).join('')}
+          ${data.memes.map(number => memeBlock(number)).join('')}
         </div>
         ${makeFooter(pageNumber)}
-      </div>
-    `;
+      </div>`;
   }
 
   return `
     <div class="page-inner article-page">
-      ${makeHeader(pageNumber)}
+      ${makeHeader()}
       <div>
         <h2 class="article-title">${data.title}</h2>
         <div class="article-subtitle">${data.subtitle}</div>
       </div>
-      <div class="meme-frame">${makeMeme(data.memes[0])}</div>
+      ${memeBlock(data.memes[0])}
       ${makeFooter(pageNumber)}
-    </div>
-  `;
+    </div>`;
 }
 
-// Каждая физическая страница имеет лицевую и оборотную сторону.
+const book = document.getElementById('book');
+const counter = document.getElementById('counter');
+const progressBar = document.getElementById('progressBar');
+const prevButton = document.getElementById('prev');
+const nextButton = document.getElementById('next');
+
 const sheets = [];
 
 for (let i = 0; i < pages.length; i += 2) {
@@ -771,8 +724,7 @@ function updateBook() {
   prevButton.disabled = currentSheet === 0;
   nextButton.disabled = currentSheet >= sheets.length;
 
-  progressBar.style.width =
-    `${(currentSheet / sheets.length) * 100}%`;
+  progressBar.style.width = `${(currentSheet / sheets.length) * 100}%`;
 }
 
 function nextPage() {
@@ -812,7 +764,7 @@ book.addEventListener('touchend', event => {
   else prevPage();
 }, { passive: true });
 
-// Увеличение изображений.
+/* Увеличение изображений */
 const zoom = document.getElementById('zoom');
 const zoomImage = document.getElementById('zoomImage');
 
@@ -829,8 +781,158 @@ zoom.addEventListener('click', () => {
   zoomImage.src = '';
 });
 
+/* Реакции Supabase */
+const VISITOR_STORAGE_KEY = 'vneplanovy_visitor_id';
+
+function getVisitorId() {
+  let id = localStorage.getItem(VISITOR_STORAGE_KEY);
+
+  if (!id) {
+    id = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    localStorage.setItem(VISITOR_STORAGE_KEY, id);
+  }
+
+  return id;
+}
+
+const visitorId = getVisitorId();
+const reactionRows = new Map();
+
+function setStatus(memeId, message) {
+  const el = book.querySelector(
+    `[data-status-for="${CSS.escape(String(memeId))}"]`
+  );
+  if (el) el.textContent = message || '';
+}
+
+function renderReactionGroup(memeId) {
+  const group = book.querySelector(
+    `[data-meme-id="${CSS.escape(String(memeId))}"]`
+  );
+  if (!group) return;
+
+  const rows = reactionRows.get(String(memeId)) || [];
+  const counts = {};
+
+  rows.forEach(row => {
+    counts[row.emoji] = (counts[row.emoji] || 0) + 1;
+  });
+
+  const mine = rows.find(row => row.visitor_id === visitorId)?.emoji || null;
+
+  group.querySelectorAll('.reaction').forEach(button => {
+    const emoji = button.dataset.emoji;
+    button.classList.toggle('selected', emoji === mine);
+    button.querySelector('.count').textContent = counts[emoji] || 0;
+    button.setAttribute('aria-pressed', String(emoji === mine));
+  });
+}
+
+async function loadReactions() {
+  const ids = [...book.querySelectorAll('[data-meme-id]')]
+    .map(el => el.dataset.memeId);
+
+  if (!ids.length) return;
+
+  const { data, error } = await supabaseClient
+    .from('reactions')
+    .select('meme_id,visitor_id,emoji')
+    .in('meme_id', ids);
+
+  if (error) {
+    ids.forEach(id => setStatus(id, 'Реакции пока недоступны'));
+    console.error('Supabase load error:', error);
+    return;
+  }
+
+  reactionRows.clear();
+  ids.forEach(id => reactionRows.set(id, []));
+
+  (data || []).forEach(row => {
+    const id = String(row.meme_id);
+    if (!reactionRows.has(id)) reactionRows.set(id, []);
+    reactionRows.get(id).push(row);
+  });
+
+  ids.forEach(renderReactionGroup);
+}
+
+async function refreshMeme(id) {
+  const { data, error } = await supabaseClient
+    .from('reactions')
+    .select('meme_id,visitor_id,emoji')
+    .eq('meme_id', id);
+
+  if (error) return;
+
+  reactionRows.set(String(id), data || []);
+  renderReactionGroup(String(id));
+}
+
+async function chooseReaction(memeId, emoji) {
+  const id = String(memeId);
+  const rows = reactionRows.get(id) || [];
+  const current = rows.find(row => row.visitor_id === visitorId);
+
+  setStatus(id, 'Сохраняю…');
+
+  let result;
+
+  if (current?.emoji === emoji) {
+    result = await supabaseClient
+      .from('reactions')
+      .delete()
+      .eq('meme_id', id)
+      .eq('visitor_id', visitorId);
+  } else {
+    result = await supabaseClient
+      .from('reactions')
+      .upsert(
+        { meme_id: id, visitor_id: visitorId, emoji },
+        { onConflict: 'meme_id,visitor_id' }
+      );
+  }
+
+  if (result.error) {
+    setStatus(id, 'Не удалось сохранить реакцию');
+    console.error('Supabase reaction error:', result.error);
+    return;
+  }
+
+  await refreshMeme(id);
+  setStatus(id, '');
+}
+
+book.addEventListener('click', event => {
+  const button = event.target.closest('.reaction');
+  if (!button) return;
+
+  const group = button.closest('[data-meme-id]');
+  if (!group) return;
+
+  chooseReaction(group.dataset.memeId, button.dataset.emoji);
+});
+
+loadReactions();
+
+supabaseClient
+  .channel('public-reactions')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'reactions' },
+    payload => {
+      const id = String(
+        payload.new?.meme_id ?? payload.old?.meme_id ?? ''
+      );
+      if (id) refreshMeme(id);
+    }
+  )
+  .subscribe();
+
 updateBook();
 </script>
-
 </body>
 </html>
