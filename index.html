@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -322,7 +323,31 @@ body {
   max-height: 100%;
   object-fit: contain;
 }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <strong>Внеплановый выпуск</strong>
+  <span>Цифровой журнал · № 01 · Октябрь 2026</span>
+</div>
 
+<div class="book-area">
+  <div class="book" id="book"></div>
+</div>
+
+<div class="progress">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="page-counter" id="counter">Обложка</div>
+
+<div class="hint">Листай журнал свайпом влево или вправо</div>
+
+<div class="zoom" id="zoom">
+  <img src="" alt="Увеличенное изображение" id="zoomImage">
+</div>
+
+<style>
 .back-cover {
   justify-content: center;
   align-items: center;
@@ -330,17 +355,39 @@ body {
   background:
     radial-gradient(ellipse at center, rgba(182,94,66,.08), transparent 60%),
     var(--paper);
+  padding: 28px 34px;
 }
 
-.back-cover h2 { font: 700 38px 'Playfair Display', serif; }
+.back-cover h2 {
+  font: 700 clamp(27px, 4vw, 38px)/1.2 'Playfair Display', serif;
+  margin: 18px 0 22px;
+  max-width: 520px;
+}
 
 .back-cover p {
-  max-width: 390px;
+  max-width: 440px;
   color: var(--muted);
-  font: italic 17px/1.7 'Playfair Display', serif;
+  font: italic 16px/1.7 'Playfair Display', serif;
+  margin: 0 0 13px;
 }
 
-/* Реакции */
+.farewell-animals {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(12px, 4vw, 30px);
+  width: 100%;
+  margin-top: 24px;
+  flex-shrink: 0;
+}
+
+.farewell-animals img {
+  display: block;
+  width: min(24%, 115px);
+  height: 105px;
+  object-fit: contain;
+}
+
 .reactions {
   display: flex;
   flex-wrap: wrap;
@@ -453,59 +500,73 @@ body {
 
 @media (max-width: 600px) {
   .book-area { perspective: none; }
+
   .book {
     transform: none;
     transform-style: flat;
     filter: none;
     contain: layout paint;
   }
-  .sheet { display: none; transform: none !important; transition: none !important; }
+
+  .sheet {
+    display: none;
+    transform: none !important;
+    transition: none !important;
+  }
+
   .sheet.active { display: block; }
   .page.back { display: none; }
+
   .topbar { padding: 13px 15px; font-size: 9px; }
   .topbar strong { font-size: 14px; }
   .book-area { padding: 5px 10px 15px; }
-  .book { width: 94vw; height: min(680px, 72vh); min-height: 430px; }
+
+  .book {
+    width: 94vw;
+    height: min(680px, 72vh);
+    min-height: 430px;
+  }
+
   .page { padding: 22px 19px; }
+
   .cover .masthead { font-size: clamp(39px, 11vw, 62px); }
   .cover .subtitle { font-size: 16px; }
   .article-title { font-size: 23px; }
   .article-subtitle { font-size: 10px; }
+
   .contents { gap: 7px 10px; margin-top: 8px; padding-top: 9px; }
   .contents-item { font-size: 9px; }
   .article-kicker { font-size: 8px; margin-top: 8px; }
   .meme-caption { font-size: 11px; }
   .two-memes { gap: 6px; }
+
   .page-counter { min-width: 65px; font-size: 10px; }
   .reactions { gap: 4px; padding: 3px 0; }
   .reaction { padding: 3px 6px; min-height: 26px; gap: 3px; }
   .reaction .emoji { font-size: 14px; }
   .reaction .count { font-size: 9px; }
   .reaction:hover { transform: none; }
+
+  .back-cover { padding: 20px 17px; }
+  .back-cover h2 {
+    font-size: clamp(25px, 7vw, 32px);
+    margin: 12px 0 17px;
+  }
+  .back-cover p {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+  .farewell-animals {
+    margin-top: 17px;
+    gap: 12px;
+  }
+  .farewell-animals img {
+    height: 75px;
+    width: 27%;
+  }
 }
 </style>
-</head>
-<body>
-<div class="topbar">
-  <strong>Внеплановый выпуск</strong>
-  <span>Цифровой журнал · № 01 · Октябрь 2026</span>
-</div>
-
-<div class="book-area">
-  <div class="book" id="book"></div>
-</div>
-
-<div class="progress">
-  <div class="progress-bar" id="progressBar"></div>
-</div>
-
-<div class="page-counter" id="counter">Обложка</div>
-
-<div class="hint">Листай журнал свайпом влево или вправо</div>
-
-<div class="zoom" id="zoom">
-  <img src="" alt="Увеличенное изображение" id="zoomImage">
-</div>
 
 <script>
 const SUPABASE_URL = 'https://casdmfsctsalhukxesfa.supabase.co';
@@ -637,7 +698,9 @@ function memeBlock(id) {
       ${reactionMarkup(id)}
     </div>`;
 }
+</script>
 
+<script>
 function makePage(data, pageNumber) {
   if (data.type === 'cover') {
     return `
@@ -671,11 +734,23 @@ function makePage(data, pageNumber) {
     return `
       <div class="page-inner back-cover">
         <div class="cover-note">Конец выпуска</div>
-        <h2>До новых встреч!</h2>
-        <p>Пусть впереди будет много интересных историй, хороших людей и поводов для улыбки.</p>
-        <p>И пусть рядом всегда будут те, с кем можно делиться идеями, поддерживать друг друга и вместе находить решения даже в самых непростых ситуациях.</p>
-        <p>Спасибо за совместную работу. Ведь именно команда превращает отдельные усилия в общий результат.</p>
-        <div class="cover-decoration">✳</div>
+        <h2>На этом мемы закончились, а жизнь продолжается!</h2>
+        <p>
+          Надеюсь, эта небольшая коллекция хотя бы пару раз
+          заставила вас улыбнуться и помогла отвлечься
+          от рабочих будней.
+        </p>
+        <p>
+          Спасибо за совместную работу, помощь и время!
+          Пусть впереди будет побольше интересных проектов,
+          хороших людей, спокойных дедлайнов и поводов для смеха.
+        </p>
+        <p>Ну а если что — мемы всегда найдутся.</p>
+        <div class="farewell-animals">
+          <img src="assets/bee.jpeg" alt="Пчёлка" loading="lazy">
+          <img src="assets/duck.jpeg" alt="Уточка" loading="lazy">
+          <img src="assets/cow.jpeg" alt="Коровка" loading="lazy">
+        </div>
       </div>`;
   }
 
@@ -707,13 +782,13 @@ function makePage(data, pageNumber) {
       ${makeFooter(pageNumber)}
     </div>`;
 }
-  const book = document.getElementById('book');
+
+const book = document.getElementById('book');
 const counter = document.getElementById('counter');
 const progressBar = document.getElementById('progressBar');
 
 const sheets = [];
 
-// Каждый материал — отдельный лист.
 for (let i = 0; i < pages.length; i++) {
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
@@ -797,7 +872,6 @@ book.addEventListener('touchend', event => {
   else prevPage();
 }, { passive: true });
 
-/* Увеличение изображений */
 const zoom = document.getElementById('zoom');
 const zoomImage = document.getElementById('zoomImage');
 
@@ -814,7 +888,6 @@ zoom.addEventListener('click', () => {
   zoomImage.src = '';
 });
 
-/* Реакции Supabase */
 const reactionCounts = new Map();
 const myReactions = new Map();
 let authReady = false;
